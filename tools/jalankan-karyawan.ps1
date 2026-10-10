@@ -47,3 +47,7 @@ if (-not $Baru -and $hasHistory) { $claudeArgs = @('--continue') + $claudeArgs }
 
 Write-Host "Menjalankan $($k.nama) ($($k.role))..." -ForegroundColor Cyan
 & claude @claudeArgs
+
+# Keluar normal supaya Windows Terminal menutup tab ini (closeOnExit menutup tab
+# yang keluar dengan kode 0), termasuk saat tutup-kantor.ps1 menghentikan Claude.
+exit 0
