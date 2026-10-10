@@ -24,19 +24,30 @@ const DISCORD_LIMIT = 2000
 
 async function main() {
   const sender = process.argv[2] ?? 'Karyawan'
-  const webhookFile = join(homedir(), '.claude', 'channels', 'kantor-ricko', 'ruang-rapat-webhook.txt')
+  const webhookFile = process.env.INTERKOM_WEBHOOK_FILE // untuk pengujian
+    ?? join(homedir(), '.claude', 'channels', 'kantor-ricko', 'ruang-rapat-webhook.txt')
   if (!existsSync(webhookFile)) return
   const url = readFileSync(webhookFile, 'utf8').trim()
   if (!url) return
 
   let raw = ''
   for await (const chunk of process.stdin) raw += chunk
-  const { to = '', message = '' } = JSON.parse(raw).tool_input ?? {}
+  const input = JSON.parse(raw)
+  const { to = '', message = '' } = input.tool_input ?? {}
   if (!message.trim()) return // langganan notify_when_idle tanpa pesan
 
   const bareTo = to.replace(/\s*\[.*\]$/, '')
   const target = NAMA[bareTo] ?? bareTo
-  let text = `📞 **${sender} → ${target}**\n${message}`
+
+  // Pesan ke karyawan yang sesinya belum dinyalakan gagal terkirim ({success: false}).
+  // Catat sebagai gagal, tanpa isi, supaya tidak terlihat seolah-olah sampai.
+  let response = input.tool_response
+  if (typeof response === 'string') {
+    try { response = JSON.parse(response) } catch {}
+  }
+  let text = response?.success === false
+    ? `📵 **${sender} → ${target}** — tidak terkirim (${target} belum aktif)`
+    : `📞 **${sender} → ${target}**\n${message}`
 
   const chunks = []
   while (text.length > 0) {
