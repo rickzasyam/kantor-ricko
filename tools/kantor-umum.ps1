@@ -55,6 +55,30 @@ function Set-JendelaKantor([bool]$Tampil) {
   }
 }
 
+# Apakah sesi terdaftar untuk interkom (pesan antar-sesi). Sesi yang mengira dirinya
+# "sesi anak" (mewarisi variabel sesi Claude Code lain) tidak pernah mendaftar.
+function Test-TerdaftarInterkom([int]$SessionPid) {
+  if (-not $SessionPid) { return $false }
+  return Test-Path (Join-Path $env:USERPROFILE ".claude\sessions\$SessionPid.json")
+}
+
+# Claude Code menandai server MCP yang gagal sebagai "perlu login" di file cache global,
+# lalu SEMUA sesi berikutnya melewatkan server itu. Plugin Discord gagal setiap kali
+# dinyalakan tanpa token bot (mis. di sesi Claude Code biasa), jadi tanda itu dihapus
+# sebelum kantor dibuka. Bagian lain file dibiarkan apa adanya.
+function Clear-TandaDiscordGagal {
+  $file = Join-Path $env:USERPROFILE '.claude\mcp-needs-auth-cache.json'
+  if (-not (Test-Path $file)) { return }
+  $text = [IO.File]::ReadAllText($file)
+  $key = [regex]::Escape('"plugin:discord:discord"')
+  $baru = [regex]::Replace($text, ",\s*$key\s*:\s*\{[^{}]*\}", '')
+  if ($baru -eq $text) { $baru = [regex]::Replace($text, "$key\s*:\s*\{[^{}]*\}\s*,?", '') }
+  if ($baru -eq $text) { return }
+  try { $null = $baru | ConvertFrom-Json } catch { return }   # jangan pernah menulis JSON rusak
+  [IO.File]::WriteAllText($file, $baru, (New-Object System.Text.UTF8Encoding $false))
+  Write-Host '  (tanda "Discord gagal" dari sesi lain dibersihkan)'
+}
+
 # Proses Claude Code milik karyawan $Id yang sedang jalan di terminal. Dicari dari baris
 # perintahnya, karena sesi terminal tidak selalu muncul di `claude agents --json`.
 function Get-ProsesKaryawan([string]$Id) {
@@ -76,14 +100,6 @@ function Get-Karyawan([string[]]$Hanya) {
   $all = @(Get-Content (Join-Path $KantorRoot 'tools\karyawan.json') -Raw | ConvertFrom-Json | ForEach-Object { $_ })
   if ($Hanya) { $all = @($all | Where-Object { $Hanya -contains $_.id }) }
   return $all
-}
-
-# Semua sesi Claude Code (terminal dan latar belakang), termasuk yang sudah berhenti.
-# Sesi yang prosesnya masih hidup punya field "status".
-function Get-SesiClaude {
-  $json = & claude agents --json --all 2>$null | Out-String
-  if (-not $json.Trim()) { return @() }
-  try { return @($json | ConvertFrom-Json | ForEach-Object { $_ }) } catch { return @() }
 }
 
 # Apakah sesi dengan proses $SessionPid punya koneksi Discord hidup (proses bun plugin

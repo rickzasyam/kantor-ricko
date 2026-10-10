@@ -15,13 +15,6 @@ param([string[]]$Hanya)
 
 . (Join-Path $PSScriptRoot 'tools\kantor-umum.ps1')
 $karyawan = Get-Karyawan $Hanya
-$ids = @($karyawan | ForEach-Object { $_.id })
-
-# Sisa background session (claude --bg) dari percobaan lama.
-foreach ($s in @(Get-SesiClaude | Where-Object { $_.kind -eq 'background' -and $ids -contains $_.name })) {
-  & claude stop $s.id 2>&1 | Out-Null
-  & claude rm $s.id 2>&1 | Out-Null
-}
 
 foreach ($k in $karyawan) {
   $procs = @(Get-ProsesKaryawan $k.id)

@@ -14,7 +14,8 @@
 #>
 param(
   [Parameter(Mandatory = $true)][string]$Id,
-  [switch]$Baru
+  [switch]$Baru,
+  [switch]$LogDebug   # tulis log debug Claude Code ke ~/.claude/debug/ untuk mencari masalah
 )
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
@@ -27,6 +28,16 @@ $state = Join-Path $env:USERPROFILE ".claude\channels\kantor-ricko\$Id"
 if (-not (Test-Path (Join-Path $state '.env'))) {
   Write-Warning "Bot Discord $($k.nama) belum disetup. Jalankan .\tools\setup-discord.ps1 dulu."
 }
+
+# Buang variabel sesi Claude Code yang terwarisi, misalnya kalau kantor dibuka dari
+# dalam sesi Claude Code lain (Windows Terminal meneruskan environment pemanggilnya).
+# Tanpa ini karyawan mengira dirinya sesi "anak": tidak mendaftar untuk interkom dan
+# ikut memakai koneksi sesi induk. Variabel yang Anda set sendiri di Windows tetap dipakai.
+$userEnv = [Environment]::GetEnvironmentVariables('User')
+$machineEnv = [Environment]::GetEnvironmentVariables('Machine')
+Get-ChildItem env: | Where-Object {
+  $_.Name -match '^(CLAUDE|ANTHROPIC_|MCP_|OTEL_)' -and -not $userEnv.Contains($_.Name) -and -not $machineEnv.Contains($_.Name)
+} | ForEach-Object { Remove-Item -LiteralPath "env:$($_.Name)" }
 
 $env:DISCORD_STATE_DIR = $state
 $Host.UI.RawUI.WindowTitle = "$($k.nama) - $($k.role)"
@@ -44,6 +55,7 @@ $projectKey = $dir -replace '[^A-Za-z0-9]', '-'
 $transcripts = Join-Path $env:USERPROFILE ".claude\projects\$projectKey"
 $hasHistory = (Test-Path $transcripts) -and (Get-ChildItem $transcripts -Filter '*.jsonl' -ErrorAction SilentlyContinue)
 if (-not $Baru -and $hasHistory) { $claudeArgs = @('--continue') + $claudeArgs }
+if ($LogDebug) { $claudeArgs = @('--debug') + $claudeArgs }
 
 Write-Host "Menjalankan $($k.nama) ($($k.role))..." -ForegroundColor Cyan
 & claude @claudeArgs

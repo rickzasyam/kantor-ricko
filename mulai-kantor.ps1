@@ -44,15 +44,9 @@ if (-not (Test-Path $DriveKantor)) {
 }
 
 Write-Host 'Membuka kantor...' -ForegroundColor Cyan
-$sesi = @(Get-SesiClaude)
+Clear-TandaDiscordGagal
 $perluDibuka = @()
 foreach ($k in $karyawan) {
-  # Sisa background session (claude --bg) dibuang supaya bot Discord tidak dobel.
-  foreach ($s in @($sesi | Where-Object { $_.kind -eq 'background' -and $_.name -eq $k.id })) {
-    & claude stop $s.id 2>&1 | Out-Null
-    & claude rm $s.id 2>&1 | Out-Null
-  }
-
   $live = @(Get-ProsesKaryawan $k.id)
   if ($live.Count -eq 1 -and -not $Baru -and (Test-PunyaDiscord $live[0].ProcessId)) {
     Write-Host "  $($k.nama): sudah bekerja"
@@ -90,20 +84,27 @@ if ($perluDibuka.Count) {
   Set-JendelaKantor $false
 }
 
-# --- Pastikan tiap karyawan tersambung ke Discord ----------------------------------
-# Karyawan yang tertahan dialog di jendela tersembunyi tidak akan pernah tersambung,
+# --- Pastikan tiap karyawan tersambung ke Discord dan terdaftar di interkom ---------
+# Karyawan yang tertahan dialog di jendela tersembunyi tidak akan pernah siap,
 # jadi laporkan supaya bisa dilihat dengan tampilkan-kantor.ps1.
 if ($perluDibuka.Count) {
-  Write-Host 'Menunggu karyawan tersambung ke Discord...'
+  Write-Host 'Menunggu karyawan siap (Discord + interkom)...'
   $belum = @($perluDibuka)
   for ($i = 0; $i -lt 30 -and $belum.Count; $i++) {
     Start-Sleep -Seconds 3
-    $belum = @($belum | Where-Object { -not (@(Get-ProsesKaryawan $_.id) | Where-Object { Test-PunyaDiscord $_.ProcessId }) })
+    $belum = @($belum | Where-Object {
+      -not (@(Get-ProsesKaryawan $_.id) | Where-Object { (Test-PunyaDiscord $_.ProcessId) -and (Test-TerdaftarInterkom $_.ProcessId) })
+    })
   }
   if ($belum.Count) {
-    Write-Warning "Belum tersambung ke Discord: $($belum.nama -join ', '). Lihat jendelanya dengan .\tampilkan-kantor.ps1 (mungkin ada dialog yang menunggu)."
+    foreach ($k in $belum) {
+      $p = @(Get-ProsesKaryawan $k.id) | Select-Object -First 1
+      $d = if ($p -and (Test-PunyaDiscord $p.ProcessId)) { 'ok' } else { 'BELUM' }
+      $s = if ($p -and (Test-TerdaftarInterkom $p.ProcessId)) { 'ok' } else { 'BELUM' }
+      Write-Warning "$($k.nama): Discord $d, interkom $s. Lihat jendelanya dengan .\tampilkan-kantor.ps1"
+    }
   } else {
-    Write-Host '  Semua karyawan tersambung ke Discord.' -ForegroundColor Green
+    Write-Host '  Semua karyawan tersambung ke Discord dan interkom.' -ForegroundColor Green
   }
 }
 

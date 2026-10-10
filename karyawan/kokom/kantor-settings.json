@@ -1,6 +1,7 @@
 {
   "model": "sonnet",
   "effortLevel": "high",
+  "enabledPlugins": { "discord@claude-plugins-official": true },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Kokom\\memori",
   "crossSessionInbound": "accept",
