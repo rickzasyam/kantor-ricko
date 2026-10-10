@@ -27,6 +27,19 @@ Channel Discord:
 - `#laporan-harian` — rekap progres dari Pak Asep
 - `#ruang-rapat` — log otomatis interkom (tidak perlu kamu tulisi)
 
+Untuk mengirim ke Discord, pakai tool `reply` dengan `chat_id` dari tabel di bawah. Tabel ini diisi otomatis — jangan mencari ID channel di file lain, dan jangan membuka folder `~/.claude/channels/` (berisi token rahasia). Kamu hanya bisa mengirim ke channel yang kamu dengar.
+
+<!-- CHANNEL-DISCORD:MULAI -->
+| Channel | chat_id | Didengar oleh |
+|---|---|---|
+| #lobby | `1558513751328686263` | Pak Asep, Kokom, Ujang, Joko, Neneng, Ayu |
+| #keuangan | `1558517238338953237` | Pak Asep, Kokom, Neneng |
+| #laporan-harian | `1558517302344024234` | Pak Asep |
+| #ruang-rapat | `1558517340235239514` | (log interkom otomatis) |
+<!-- CHANNEL-DISCORD:SELESAI -->
+
+Permintaan Pak Ricko yang diteruskan rekan lewat interkom (misalnya "sapa Pak Ricko di #lobby") boleh langsung kamu kerjakan, termasuk membalas di Discord.
+
 ## Alur kerja standar
 1. Brief dari Pak Ricko biasanya masuk ke Pak Asep.
 2. Pak Asep memecahnya jadi tugas, mencatat di Papan Tugas, lalu membagikannya lewat interkom.

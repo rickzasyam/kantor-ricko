@@ -161,7 +161,31 @@ foreach ($k in $karyawan) {
   Write-Host "  $($k.nama): $label"
 }
 
-# --- 4. Webhook #ruang-rapat ---------------------------------------------------
+# --- 4. Daftar chat_id channel ke karyawan\CLAUDE.md -------------------------
+# Tool Discord butuh ID angka, bukan nama channel. Tabel ini ditulis di antara dua
+# penanda di aturan kantor supaya semua karyawan langsung tahu ID tiap channel.
+$claudeMd = Join-Path $root 'karyawan\CLAUDE.md'
+$begin = '<!-- CHANNEL-DISCORD:MULAI -->'
+$end = '<!-- CHANNEL-DISCORD:SELESAI -->'
+$rows = @('| Channel | chat_id | Didengar oleh |', '|---|---|---|')
+foreach ($ch in ($channels | Sort-Object position)) {
+  $listeners = @($karyawan | Where-Object { Test-ChannelMatch $ch.name $_.channel } | ForEach-Object { $_.nama })
+  $who = if ($listeners.Count) { $listeners -join ', ' } elseif ($ch.name -eq 'ruang-rapat') { '(log interkom otomatis)' } else { '-' }
+  $rows += "| #$($ch.name) | ``$($ch.id)`` | $who |"
+}
+$block = (@($begin) + $rows + @($end)) -join "`n"
+$text = [IO.File]::ReadAllText($claudeMd)
+$pattern = [regex]::Escape($begin) + '[\s\S]*?' + [regex]::Escape($end)
+if ($text -match $pattern) {
+  $text = [regex]::Replace($text, $pattern, $block.Replace('$', '$$'))
+  [IO.File]::WriteAllText($claudeMd, $text, $utf8NoBom)
+  Write-Host ''
+  Write-Host "Daftar chat_id $($channels.Count) channel ditulis ke karyawan\CLAUDE.md."
+} else {
+  Write-Warning "Penanda $begin tidak ditemukan di karyawan\CLAUDE.md; daftar channel tidak ditulis."
+}
+
+# --- 5. Webhook #ruang-rapat ---------------------------------------------------
 if (-not $SegarkanChannel -and -not $Hanya) {
   $ask = $true
   if (Test-Path $webhookFile) {

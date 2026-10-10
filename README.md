@@ -70,7 +70,7 @@ Balasan Pak Asep muncul di `#lobby`, obrolan interkomnya muncul di `#ruang-rapat
 | Buka kantor | `.\mulai-kantor.ps1` |
 | Hemat kuota: sebagian karyawan saja | `.\mulai-kantor.ps1 -Hanya pak-asep,ujang,kokom` |
 | Semua mulai percakapan baru | `.\mulai-kantor.ps1 -Baru` |
-| Setelah membuat channel `#proyek-...` baru | `.\tools\setup-discord.ps1 -SegarkanChannel` |
+| Setelah membuat channel `#proyek-...` baru (juga memperbarui daftar chat_id di aturan kantor; jalankan ulang karyawan setelahnya) | `.\tools\setup-discord.ps1 -SegarkanChannel` |
 | Ganti token satu bot | `.\tools\setup-discord.ps1 -Hanya kokom` |
 | Tutup kantor | tutup jendela Windows Terminal "kantor-ricko" |
 
