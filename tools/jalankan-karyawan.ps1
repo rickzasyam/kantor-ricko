@@ -18,7 +18,8 @@ param(
 )
 
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$k = Get-Content (Join-Path $root 'tools\karyawan.json') -Raw | ConvertFrom-Json | Where-Object { $_.id -eq $Id }
+# "| ForEach-Object { $_ }": PowerShell 5.1 mengembalikan array JSON sebagai satu objek; ini memecahnya per karyawan.
+$k = Get-Content (Join-Path $root 'tools\karyawan.json') -Raw | ConvertFrom-Json | ForEach-Object { $_ } | Where-Object { $_.id -eq $Id }
 if (-not $k) { throw "Karyawan '$Id' tidak ditemukan di tools\karyawan.json" }
 
 $dir = Join-Path $root "karyawan\$Id"

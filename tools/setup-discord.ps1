@@ -23,7 +23,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
-$karyawan = Get-Content (Join-Path $root 'tools\karyawan.json') -Raw | ConvertFrom-Json
+$karyawan = @(Get-Content (Join-Path $root 'tools\karyawan.json') -Raw | ConvertFrom-Json | ForEach-Object { $_ })
 $stateRoot = Join-Path $env:USERPROFILE '.claude\channels\kantor-ricko'
 $configFile = Join-Path $stateRoot 'config.json'
 $webhookFile = Join-Path $stateRoot 'ruang-rapat-webhook.txt'
