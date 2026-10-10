@@ -45,8 +45,29 @@ function Get-Token([string]$Id) {
   return $null
 }
 
+$userAgent = 'DiscordBot (https://github.com/rickzasyam/kantor-ricko, 1.0)'
+
+# Memanggil API Discord. Mencoba ulang bila Discord sibuk (rate limit / gangguan sesaat).
+# "| ForEach-Object { $_ }" memecah array JSON jadi elemen satu per satu; tanpa ini
+# PowerShell 5.1 mengembalikan seluruh daftar sebagai satu objek.
 function Invoke-Discord([string]$Token, [string]$Path) {
-  Invoke-RestMethod -Uri "https://discord.com/api/v10$Path" -Headers @{ Authorization = "Bot $Token" }
+  for ($try = 1; ; $try++) {
+    try {
+      return (Invoke-RestMethod -Uri "https://discord.com/api/v10$Path" -UserAgent $userAgent `
+        -Headers @{ Authorization = "Bot $Token" } | ForEach-Object { $_ })
+    } catch {
+      $err = $_
+      $detail = "$($err.ErrorDetails.Message)"
+      $status = 0
+      try { $status = [int]$err.Exception.Response.StatusCode } catch {}
+      $wait = 2
+      try { $j = $detail | ConvertFrom-Json; if ($j.retry_after) { $wait = [int][math]::Ceiling([double]$j.retry_after) + 1 } } catch {}
+      $transient = ($status -eq 429) -or ($status -ge 500) -or ($detail -match '40333')
+      if (-not $transient -or $try -ge 4) { throw $err }
+      Write-Host "  Discord sedang sibuk, mencoba lagi dalam $wait detik..." -ForegroundColor DarkGray
+      Start-Sleep -Seconds $wait
+    }
+  }
 }
 
 function Test-ChannelMatch([string]$Name, $Patterns) {
@@ -63,6 +84,7 @@ if (-not $config.ownerId) {
   Write-Host 'Cara: Discord > User Settings > Advanced > nyalakan Developer Mode,'
   Write-Host '      lalu klik kanan nama/foto Anda > Copy User ID.'
   $config.ownerId = (Read-Host 'User ID Anda').Trim()
+  [IO.File]::WriteAllText($configFile, ($config | ConvertTo-Json), $utf8NoBom)
 }
 
 # --- 2. Token bot tiap karyawan ----------------------------------------------
@@ -76,8 +98,8 @@ if (-not $SegarkanChannel) {
     $dir = Join-Path $stateRoot $k.id
     New-Item -ItemType Directory -Force -Path $dir | Out-Null
     if ((Get-Token $k.id) -and -not $Hanya) {
-      $ans = Read-Host "Token $($k.nama) sudah tersimpan. Ganti? (y/N)"
-      if ($ans -notmatch '^[yY]') { continue }
+      Write-Host "Token $($k.nama): sudah tersimpan (untuk mengganti: .\tools\setup-discord.ps1 -Hanya $($k.id))"
+      continue
     }
     $token = Read-Secret "Token bot $($k.nama)"
     if (-not $token) { Write-Host "  Dilewati." -ForegroundColor Yellow; continue }
