@@ -1,0 +1,25 @@
+{
+  "model": "sonnet",
+  "effortLevel": "high",
+  "autoMemoryEnabled": true,
+  "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Ujang\\memori",
+  "crossSessionInbound": "accept",
+  "env": {
+    "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "200000",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60"
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "SendMessage",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/interkom-log.mjs\" \"Ujang\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

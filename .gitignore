@@ -1,0 +1,10 @@
+# Rahasia: token bot & webhook seharusnya hanya ada di %USERPROFILE%\.claude\channels\kantor-ricko\
+.env
+*.env
+*webhook*.txt
+access.json
+
+# Pengaturan lokal Claude Code
+.claude/settings.local.json
+
+node_modules/

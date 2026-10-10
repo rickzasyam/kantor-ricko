@@ -1,0 +1,8 @@
+[
+  { "id": "pak-asep", "nama": "Pak Asep", "role": "PM & Admin",                  "channel": ["lobby", "laporan-harian", "keuangan", "proyek-*"] },
+  { "id": "kokom",    "nama": "Kokom",    "role": "Akuntan Senior",              "channel": ["lobby", "keuangan", "proyek-*"] },
+  { "id": "ujang",    "nama": "Ujang",    "role": "Spreadsheet & Automation",    "channel": ["lobby", "proyek-*"] },
+  { "id": "joko",     "nama": "Joko",     "role": "Full-stack Developer",        "channel": ["lobby", "proyek-*"] },
+  { "id": "neneng",   "nama": "Neneng",   "role": "Data Analyst & QA",           "channel": ["lobby", "keuangan", "proyek-*"] },
+  { "id": "ayu",      "nama": "Ayu",      "role": "Designer",                    "channel": ["lobby", "proyek-*"] }
+]
