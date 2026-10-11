@@ -16,6 +16,8 @@
 //    Setelah rapat selesai mereka kembali ke kursi semula. Kursi rapat tidak disimpan ke server.
 //    Sekalian penjaga ruangan: karyawan yang duduk di luar ruangannya (areaMappings) -- misalnya
 //    karena kursinya terpilih sebelum pembagian ruangan termuat -- dipindah ke ruangannya.
+// 5. Label karakter: nama folder ("asep") diganti nama karyawan ("Pak Asep") dengan jabatan
+//    di bawahnya ("Manager"). Data dari tools/karyawan.json (nama, jabatan) + PROFIL_LAIN.
 //
 // Jalankan ulang setelah `npm install`.
 import fs from 'node:fs'
@@ -25,6 +27,15 @@ import { fileURLToPath } from 'node:url'
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const PKG = path.join(HERE, 'node_modules', 'pixel-agents')
 const DIST = path.join(PKG, 'dist')
+
+// Nama & jabatan yang tampil di label karakter, per nama folder sesi (huruf kecil).
+const PROFIL_LAIN = { ricko: { nama: 'Pak Ricko', jabatan: 'Owner' } }
+function bacaProfil() {
+  const roster = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'tools', 'karyawan.json'), 'utf8'))
+  const profil = { ...PROFIL_LAIN }
+  for (const k of roster) profil[k.id.split('-').pop().toLowerCase()] = { nama: k.nama, jabatan: k.jabatan ?? k.role }
+  return profil
+}
 
 const KARAKTER_TETAP = {
   nama: 'karakter tetap per karyawan',
@@ -66,7 +77,8 @@ const RAPAT_TERIMA = {
 const RAPAT_TAMPILAN = {
   nama: 'karakter berkumpul di ruang rapat',
   cari: 'var lo={current:null},U=new Pa;g&&co(lo);',
-  ganti: 'var lo={current:null},U=new Pa;g&&co(lo);__kantorRapatMulai(lo);' + `
+  ganti: 'var lo={current:null},U=new Pa;g&&co(lo);__kantorRapatMulai(lo);' +
+    `window.__kantorProfil=${JSON.stringify(bacaProfil())};` + `
 function __kantorRapatMulai(ref){
   if(typeof window==="undefined")return;
   window.__kantorOffice=ref;
@@ -143,6 +155,24 @@ function __kantorRapatMulai(ref){
 `,
 }
 
+// `a` = karakter yang sedang digambar labelnya, `E.jsx` = pembuat elemen React.
+const PROFIL = 'window.__kantorProfil&&window.__kantorProfil[String(a.folderName).toLowerCase()]'
+const SPAN_KECIL = 'className:`text-2xs leading-none overflow-hidden text-ellipsis block`'
+const LABEL_JARAK = {
+  nama: 'label lebih tinggi untuk baris jabatan',
+  cari: 'top:g-(O?34:28)',
+  ganti: 'top:g-(O?((' + PROFIL + ')?44:34):28)',
+}
+const LABEL_NAMA = {
+  nama: 'label nama + jabatan',
+  cari: 'a.folderName&&(0,E.jsx)(`span`,{' + SPAN_KECIL + ',children:a.folderName})',
+  ganti:
+    'a.folderName&&(0,E.jsx)(`span`,{' + SPAN_KECIL + ',style:{fontWeight:`bold`},' +
+    'children:((' + PROFIL + ')||{}).nama||a.folderName}),' +
+    'a.folderName&&(' + PROFIL + ')&&(0,E.jsx)(`span`,{' + SPAN_KECIL + ',style:{color:`#ffd93d`,marginTop:`2px`},' +
+    'children:(' + PROFIL + ').jabatan})',
+}
+
 function bundelTampilan() {
   const html = fs.readFileSync(path.join(DIST, 'webview', 'index.html'), 'utf8')
   const m = html.match(/assets\/(index-[\w-]+\.js)/)
@@ -152,7 +182,7 @@ function bundelTampilan() {
 
 const TARGET = [
   { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA] },
 ]
 
 const versi = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8')).version

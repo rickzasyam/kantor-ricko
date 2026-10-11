@@ -2,14 +2,16 @@
 
 Enam karyawan AI (Claude Code) yang bekerja lewat Discord, saling berdiskusi lewat interkom, dan tampil sebagai karakter pixel di [pixel-agents](https://github.com/pixel-agents-hq/pixel-agents).
 
-| Karyawan | Role | Nama interkom |
-|---|---|---|
-| Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` |
-| Kokom | Akuntan Senior | `kokom` |
-| Ujang | Spreadsheet & Automation Engineer | `ujang` |
-| Joko | Full-stack Developer | `joko` |
-| Neneng | Data Analyst & QA | `neneng` |
-| Ayu | Designer (UI/UX & Visual) | `ayu` |
+| Karyawan | Role | Nama interkom | Model dasar |
+|---|---|---|---|
+| Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 |
+| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 |
+| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet 5.5 |
+| Joko | Full-stack Developer | `joko` | Opus 5.5 |
+| Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 |
+| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 |
+
+Model dasar sesuai beban kerja harian (diatur di `karyawan/<id>/kantor-settings.json`, kolom `model` dan `effortLevel`). Tugas yang lebih berat dikerjakan lewat subagent Opus; aturannya di bagian "Model & tugas berat" di `karyawan/CLAUDE.md`. Setelah mengubah model, buka ulang karyawan (`.	utup-kantor.ps1` lalu `.mulai-kantor.ps1`).
 
 ## Isi folder
 
@@ -114,6 +116,8 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Lounge | set sofa + meja kopi (susunan Pak Ricko), tanaman | - |
 | Ruang Game | TV + PS5, kursi gaming, 2 mesin arcade, meja biliar, neon, bean bag | - |
 | Kolam Renang | kolam, kursi berjemur, payung, pohon kelapa, taman | - |
+
+Label di atas karakter menampilkan status, nama, dan jabatan (mis. *Pak Asep — Manager*). Nama dan jabatan diambil dari `tools/karyawan.json` (kolom `nama`, `jabatan`); setelah diubah jalankan `.	oolspasang-pixel-office.ps1` lalu muat ulang browser.
 
 Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep jas biru, Kokom rambut ikal oranye, Joko afro, Ujang rambut jabrik, Neneng rambut bob, Ayu rambut panjang + gaun pink, Ricko jas hitam.
 

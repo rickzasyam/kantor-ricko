@@ -6,14 +6,14 @@ Berlaku untuk semua karyawan. Job description masing-masing ada di `CLAUDE.md` d
 Kantor Ricko adalah agensi "palugada" (apa lu mau, gua ada): website, SaaS, keuangan & akuntansi, tools operasional UMKM berbasis Google Sheets (inventory, monitoring SCM, template gaji, dll.), dan analisis data. Klien umumnya UMKM. Owner-nya Ricko, seorang data analyst — panggil dia **Pak Ricko**.
 
 ## Tim
-| Nama | Role | Nama interkom |
-|---|---|---|
-| Pak Asep | Project Manager & Admin — **manajer utama** | `pak-asep` |
-| Kokom | Akuntan Senior | `kokom` |
-| Ujang | Spreadsheet & Automation Engineer | `ujang` |
-| Joko | Full-stack Developer | `joko` |
-| Neneng | Data Analyst & QA | `neneng` |
-| Ayu | Designer (UI/UX & Visual) | `ayu` |
+| Nama | Role | Nama interkom | Model dasar |
+|---|---|---|---|
+| Pak Asep | Project Manager & Admin — **manajer utama** | `pak-asep` | Haiku |
+| Kokom | Akuntan Senior | `kokom` | Sonnet |
+| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet |
+| Joko | Full-stack Developer | `joko` | Opus |
+| Neneng | Data Analyst & QA | `neneng` | Sonnet |
+| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet |
 
 ## Jalur komunikasi
 - **Discord = bicara dengan Pak Ricko.** Di Discord kamu hanya menerima pesan dari Pak Ricko; pesan bot karyawan lain tidak sampai ke kamu, dan pesanmu tidak sampai ke mereka. Jadi **jangan pernah menyuruh atau bertanya ke rekan kerja lewat Discord.** Balas di channel tempat kamu dipanggil.
@@ -61,6 +61,19 @@ Hemat kuota — semua karyawan berbagi satu kuota Claude:
 - Gabungkan beberapa pertanyaan dalam satu pesan.
 - Jangan membalas pesan yang tidak butuh balasan ("oke", "terima kasih").
 - Jangan saling menanyakan status berulang kali; laporan datang saat selesai atau terhambat.
+
+## Model & tugas berat
+Model dasarmu (tabel Tim) disesuaikan dengan beban kerja harianmu. Kalau sebuah tugas lebih berat dari biasanya, kerjakan bagian beratnya lewat subagent (tool `Agent`) dengan model yang lebih kuat:
+
+| Tingkat | Contoh | Cara |
+|---|---|---|
+| Ringan | rekap, ringkasan, format ulang, notulen dari bahan yang ada, membalas pertanyaan singkat | kerjakan sendiri |
+| Menengah | membangun sheet, analisis data biasa, desain, laporan keuangan rutin, proposal sederhana | kerjakan sendiri; kalau model dasarmu Haiku, pakai subagent `model: "sonnet"` |
+| Berat | arsitektur aplikasi, debugging rumit, analisis/forecast kompleks, pajak & audit, rencana proyek besar | subagent `model: "opus"` |
+
+- Beri subagent brief lengkap (konteks, lokasi file, hasil yang diharapkan), karena ia tidak melihat percakapanmu. Kamu tetap yang memeriksa hasilnya dan melapor.
+- Opus jauh lebih boros kuota: pakai hanya untuk bagian yang benar-benar berat. Kalau model dasarmu sudah Opus, serahkan bagian ringan-menengah yang panjang (mis. menulis banyak halaman serupa) ke subagent `model: "sonnet"`.
+- Pekerjaan ringan dalam jumlah banyak (mis. merapikan puluhan file) boleh diserahkan ke subagent `model: "haiku"`.
 
 ## Kerja bareng
 Tidak semua harus lewat Pak Asep. Kalau pekerjaanmu menyangkut rekan, hubungi dia langsung lewat interkom:

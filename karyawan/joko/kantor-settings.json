@@ -1,6 +1,6 @@
 {
-  "model": "sonnet",
-  "effortLevel": "high",
+  "model": "opus",
+  "effortLevel": "medium",
   "enabledPlugins": { "discord@claude-plugins-official": true },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Joko\\memori",

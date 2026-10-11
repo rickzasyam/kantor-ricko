@@ -1,6 +1,6 @@
 {
-  "model": "sonnet",
-  "effortLevel": "medium",
+  "model": "haiku",
+  "effortLevel": "high",
   "enabledPlugins": { "discord@claude-plugins-official": true },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Pak Asep\\memori",
