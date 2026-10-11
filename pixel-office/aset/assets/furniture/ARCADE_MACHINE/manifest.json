@@ -2,12 +2,51 @@
   "id": "ARCADE_MACHINE",
   "name": "Mesin Arcade",
   "category": "misc",
-  "type": "asset",
+  "type": "group",
+  "groupType": "animation",
   "canPlaceOnWalls": false,
   "canPlaceOnSurfaces": false,
   "backgroundTiles": 1,
-  "width": 16,
-  "height": 32,
-  "footprintW": 1,
-  "footprintH": 2
+  "members": [
+    {
+      "type": "asset",
+      "id": "ARCADE_MACHINE",
+      "file": "ARCADE_MACHINE.png",
+      "width": 16,
+      "height": 32,
+      "footprintW": 1,
+      "footprintH": 2,
+      "frame": 0
+    },
+    {
+      "type": "asset",
+      "id": "ARCADE_MACHINE_ANIM_2",
+      "file": "ARCADE_MACHINE_ANIM_2.png",
+      "width": 16,
+      "height": 32,
+      "footprintW": 1,
+      "footprintH": 2,
+      "frame": 1
+    },
+    {
+      "type": "asset",
+      "id": "ARCADE_MACHINE_ANIM_3",
+      "file": "ARCADE_MACHINE_ANIM_3.png",
+      "width": 16,
+      "height": 32,
+      "footprintW": 1,
+      "footprintH": 2,
+      "frame": 2
+    },
+    {
+      "type": "asset",
+      "id": "ARCADE_MACHINE_ANIM_4",
+      "file": "ARCADE_MACHINE_ANIM_4.png",
+      "width": 16,
+      "height": 32,
+      "footprintW": 1,
+      "footprintH": 2,
+      "frame": 3
+    }
+  ]
 }

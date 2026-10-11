@@ -41,7 +41,7 @@ pixel-office/
   furnitur.mjs              23 furnitur kustom digambar piksel per piksel
   karakter.mjs              karakter tetap per karyawan + 2 karakter kustom (Ayu, Ricko)
   layout.mjs                denah kantor 46x34 (8 ruangan) + cek semua kursi bisa didatangi
-  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat)
+  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien)
   aset/                     hasil bangun: folder aset tambahan untuk pixel-agents
 ```
 
@@ -120,12 +120,17 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Ruang Game | TV + PS5, kursi gaming, 2 mesin arcade, meja biliar, neon, bean bag | - |
 | Kolam Renang | kolam, kursi berjemur, payung, pohon kelapa, taman | - |
 
+Furnitur yang bergerak terus (animasi ambien): air kolam bergelombang dan pelampung naik-turun, ikan akuarium berenang, neon Ruang Game berdenyut, layar mesin arcade dan TV game bergerak, pohon kelapa tertiup angin.
+
+![Kolam renang beranimasi](pixel-office/pratinjau-kolam.gif)
+
 Label di atas karakter menampilkan status, nama, dan jabatan (mis. *Pak Asep — Manager*). Nama dan jabatan diambil dari `tools/karyawan.json` (kolom `nama`, `jabatan`); setelah diubah jalankan `.	oolspasang-pixel-office.ps1` lalu muat ulang browser.
 
 Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep jas biru, Kokom rambut ikal oranye, Joko afro, Ujang rambut jabrik, Neneng rambut bob, Ayu rambut panjang + gaun pink, Ricko jas hitam.
 
 - Pasang / perbarui tampilan: `.\tools\pasang-pixel-office.ps1 -MulaiUlang`
 - Kembalikan denah ke desain ini setelah diedit di editor Layout: `.\tools\pasang-pixel-office.ps1 -TimpaLayout -MulaiUlang`
+- Furnitur beranimasi didaftarkan di `ANIMASI` (`pixel-office/furnitur.mjs`): fungsi gambarnya menerima nomor frame. Frame pertama memakai id lama, jadi denah yang sudah diedit tetap cocok.
 - Ubah desain: edit `pixel-office/furnitur.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
 - Setelah mengedit denah lewat editor Layout, `pasang-pixel-office.ps1` memperingatkan kalau ada kursi yang jalannya tertutup furnitur (karakter tidak akan bisa ke sana).
 - Karyawan yang duduk di luar ruangannya otomatis dipindah kembali ke ruangannya.

@@ -18,6 +18,8 @@
 //    karena kursinya terpilih sebelum pembagian ruangan termuat -- dipindah ke ruangannya.
 // 5. Label karakter: nama folder ("asep") diganti nama karyawan ("Pak Asep") dengan jabatan
 //    di bawahnya ("Manager"). Data dari tools/karyawan.json (nama, jabatan) + PROFIL_LAIN.
+// 6. Animasi ambien: furnitur dengan grup animasi di luar state on/off (kolam renang, akuarium,
+//    neon, ...) beranimasi terus, tidak hanya saat ada karyawan yang bekerja di depannya.
 //
 // Jalankan ulang setelah `npm install`.
 import fs from 'node:fs'
@@ -173,6 +175,41 @@ const LABEL_NAMA = {
     'children:(' + PROFIL + ').jabatan})',
 }
 
+// Animasi ambien: bawaannya furnitur hanya beranimasi saat "menyala" (PC di depan karyawan yang
+// bekerja). Grup animasi yang TIDAK berada di dalam state on/off (nama grupnya berakhiran `_`,
+// mis. `SWIMMING_POOL__`) dianggap animasi ambien: kolam, akuarium, neon, dll. bergerak terus.
+// `gn` = peta grup animasi -> id frame, `Un` = pembuat instance furnitur dari daftar layout.
+const DETIK_PER_FRAME = 0.35
+const AMBIEN_FUNGSI = {
+  nama: 'animasi ambien (fungsi)',
+  cari: 'var oo=class{layout;',
+  ganti:
+    'function __kantorAmbien(list,timer){var peta=new Map();' +
+    'gn.forEach(function(ids,grup){if(/_$/.test(grup)&&ids.length>1)ids.forEach(function(id){peta.set(id,ids)})});' +
+    'if(!peta.size)return list;' +
+    `var langkah=Math.floor(timer/${DETIK_PER_FRAME});` +
+    // Fase digeser per posisi supaya furnitur kembar (mis. pohon kelapa) tidak bergerak serempak.
+    'return list.map(function(f){var ids=peta.get(f.type);if(!ids)return f;' +
+    'var i=(langkah+f.col*7+f.row*3)%ids.length;return ids[i]===f.type?f:Object.assign({},f,{type:ids[i]})})}' +
+    'var oo=class{layout;',
+}
+const AMBIEN_DIAM = {
+  nama: 'animasi ambien (tanpa karyawan aktif)',
+  cari: 'if(e.size===0){this.furniture=Un(this.layout.furniture);return}',
+  ganti: 'if(e.size===0){this.furniture=Un(__kantorAmbien(this.layout.furniture,this.furnitureAnimTimer));return}',
+}
+const AMBIEN_AKTIF = {
+  nama: 'animasi ambien (ada karyawan aktif)',
+  cari: 'return n});this.furniture=Un(n)}',
+  ganti: 'return n});this.furniture=Un(__kantorAmbien(n,this.furnitureAnimTimer))}',
+}
+// Frame ke-2 dst. tidak ditampilkan sebagai furnitur terpisah di palet editor Layout.
+const AMBIEN_PALET = {
+  nama: 'sembunyikan frame animasi dari palet',
+  cari: 't.state===`on`&&c.add(t.id);_n=t;',
+  ganti: 't.state===`on`&&c.add(t.id);for(let t of e.catalog)t.animationGroup&&t.frame>0&&c.add(t.id);_n=t;',
+}
+
 function bundelTampilan() {
   const html = fs.readFileSync(path.join(DIST, 'webview', 'index.html'), 'utf8')
   const m = html.match(/assets\/(index-[\w-]+\.js)/)
@@ -182,7 +219,7 @@ function bundelTampilan() {
 
 const TARGET = [
   { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET] },
 ]
 
 const versi = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8')).version

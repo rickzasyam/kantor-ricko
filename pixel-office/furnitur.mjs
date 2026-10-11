@@ -154,17 +154,23 @@ function execChairSide() {
   return s
 }
 
-function aquarium() {
+function aquarium(f = 0) {
   const s = new Spr(32, 32)
   s.rect(1, 3, 30, 2, '#2b2b33').hl(2, 4, 28, '#fff6c2')       // tutup + lampu
   s.rect(1, 5, 30, 15, '#1d1d22')
   s.rect(2, 5, 28, 14, '#4fb3e8')
   s.rect(2, 5, 28, 3, '#6cc4ef')
   s.rect(2, 16, 28, 3, '#e6d3a3').hl(2, 16, 28, '#f0e2bd')     // pasir
-  for (const x of [5, 6, 24, 25, 26]) s.vl(x, 11 + (x % 3), 6 - (x % 3), x % 2 ? '#3fbf6f' : '#2f9e5a')
-  s.rect(9, 9, 4, 2, '#ff8c42').px(8, 9, '#ff8c42').px(13, 10, '#ffb27a').px(12, 9, '#ffffff')
-  s.rect(17, 13, 3, 2, '#ffd93d').px(20, 13, '#ffd93d').px(16, 14, '#ffe680')
-  for (const [x, y] of [[22, 7], [23, 9], [21, 11]]) s.px(x, y, '#d8f3ff')
+  const goyang = [0, 1, 0, -1][f % 4]
+  for (const x of [5, 6, 24, 25, 26]) {
+    const y0 = 11 + (x % 3)
+    s.vl(x, y0 + 2, 4 - (x % 3), x % 2 ? '#3fbf6f' : '#2f9e5a').vl(x + goyang, y0, 2, x % 2 ? '#3fbf6f' : '#2f9e5a')
+  }
+  const ikan1 = [9, 11, 13, 11][f % 4]
+  s.rect(ikan1, 9, 4, 2, '#ff8c42').px(ikan1 - 1, 9 + (f % 2), '#ff8c42').px(ikan1 + 4, 10, '#ffb27a').px(ikan1 + 3, 9, '#ffffff')
+  const ikan2 = [18, 16, 14, 16][f % 4]
+  s.rect(ikan2, 13, 3, 2, '#ffd93d').px(ikan2 + 3, 13 + (f % 2), '#ffd93d').px(ikan2 - 1, 14, '#ffe680')
+  for (const [x, y] of [[22, 13], [23, 10], [21, 7]]) s.px(x + (f % 2), 6 + ((y - 6 - f * 2 + 40) % 10), '#d8f3ff')
   s.vl(2, 5, 14, '#9fd8f5')                                    // kilau kaca
   s.rect(1, 20, 30, 11, '#2b2b33').hl(1, 20, 30, '#3a3a44')
   s.vl(16, 21, 9, '#1f1f26').hl(13, 25, 2, '#b8bec8').hl(18, 25, 2, '#b8bec8')
@@ -211,15 +217,17 @@ function presentationTv() {
   return s
 }
 
-function gameTv() {
+function gameTv(f = 0) {
   const s = tvFrame()
   for (let y = 5; y < 18; y++) s.hl(3, y, 42, y < 11 ? '#5fb4ff' : '#8fcbff')
   s.oval(11, 8, 3, 1.5, '#ffffff').oval(33, 7, 4, 1.5, '#ffffff')    // awan
   s.rect(3, 18, 42, 2, '#4caf50').rect(3, 20, 42, 5, '#8d5a3b')
   for (let x = 4; x < 44; x += 6) s.px(x, 22, '#a8714b')
   s.rect(26, 12, 8, 2, '#c8643b').hl(26, 12, 8, '#e08458')           // platform bata
-  s.rect(15, 13, 3, 3, '#e53e3e').rect(15, 16, 3, 2, '#3b5bdb').px(16, 12, '#f5c99b')   // hero
-  s.oval(30, 9, 1, 1, '#ffd93d')                                       // koin
+  const hx = 12 + [0, 2, 4, 2][f % 4], lompat = f % 4 === 2 ? 2 : 0
+  s.rect(hx, 13 - lompat, 3, 3, '#e53e3e').rect(hx, 16 - lompat, 3, 2, '#3b5bdb').px(hx + 1, 12 - lompat, '#f5c99b')   // hero
+  if (f % 2) s.vl(30, 8, 3, '#ffd93d')                                 // koin berputar
+  else s.oval(30, 9, 1, 1, '#ffd93d')
   s.hl(5, 6, 6, '#ffffff').hl(36, 6, 6, '#ffd93d')                    // HUD
   return s
 }
@@ -307,13 +315,14 @@ function gamingChairBack() {
   return s
 }
 
-function arcadeMachine() {
+function arcadeMachine(f = 0) {
   const s = new Spr(16, 32)
   s.rect(1, 1, 14, 31, '#3b2a7a').rect(13, 1, 2, 31, '#2d2060')
   s.rect(2, 2, 11, 4, '#ff4fd8').hl(2, 2, 11, '#ff9bea')            // papan nama
   s.rect(3, 7, 9, 9, '#0b1020')
   const invader = ['.x..x.', '.xxxx.', 'xx.xxx', 'xxxxxx', '.x..x.']
-  s.pattern(4, 9, invader, { x: '#7cff6b' })
+  s.pattern(3 + [0, 1, 2, 1][f % 4], 9, invader, { x: '#7cff6b' })
+  s.vl(7, 15 - (f % 4) * 2, 1, '#ffd93d')                              // peluru
   s.hl(4, 7, 3, '#ffffff').hl(9, 7, 2, '#ffd93d')
   s.rect(2, 17, 11, 4, '#2b1f5c').hl(2, 17, 11, '#3d2d7a')
   s.vl(5, 16, 2, '#cfcfcf').px(5, 15, '#ff3b3b')                     // joystick
@@ -341,7 +350,7 @@ function billiardTable() {
   return s
 }
 
-function neonSign() {
+function neonSign(f = 0) {
   const s = new Spr(32, 32)
   s.rrect(1, 4, 30, 24, '#1a1430')
   const pad = [
@@ -354,10 +363,12 @@ function neonSign() {
     '.x....xx..xx....x.',
     '..xxxx......xxxx..',
   ]
-  const glow = '#4ff6ff40'
-  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) s.pattern(7 + dx, 9 + dy, pad, { x: glow, o: '#ff4fd840' })
-  s.pattern(7, 9, pad, { x: '#4ff6ff', o: '#ff4fd8' })
-  s.hl(9, 21, 14, '#ff4fd8').hl(9, 22, 14, '#ff4fd840')               // garis neon
+  const a = ['40', '66', '40', '22'][f % 4]
+  const glow = `#4ff6ff${a}`
+  const magenta = f % 4 === 3 ? '#7a2a68' : '#ff4fd8'                // tombol "o" sesekali padam
+  for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) s.pattern(7 + dx, 9 + dy, pad, { x: glow, o: f % 4 === 3 ? null : `#ff4fd8${a}` })
+  s.pattern(7, 9, pad, { x: '#4ff6ff', o: magenta })
+  s.hl(9, 21, 14, '#ff4fd8').hl(9, 22, 14, `#ff4fd8${a}`)            // garis neon
   return s
 }
 
@@ -373,21 +384,70 @@ function beanBag() {
 
 // ------------------------------------------------------------------ Kolam renang
 
-function swimmingPool() {
+// Kolam beranimasi (FRAME_KOLAM frame, berulang mulus): pola kilau dasar kolam (caustic)
+// bergerak, riak putih bergeser, pelampung naik-turun, kilau matahari berkedip.
+const FRAME_KOLAM = 8
+const AIR = ['#1670b0', '#1d86c0', '#2394cc', '#2aa3d6', '#37b0e0']
+
+function swimmingPool(f = 0) {
   const s = new Spr(160, 80)
+  const t = (2 * Math.PI * f) / FRAME_KOLAM
+  // Pinggiran batu (coping) + nat ubin
   s.rrect(0, 0, 160, 80, '#efe9dc')
-  for (let x = 8; x < 160; x += 8) s.vl(x, 0, 4, '#d9d2c3').vl(x, 76, 4, '#d9d2c3')
-  for (let y = 8; y < 80; y += 8) s.hl(0, y, 4, '#d9d2c3').hl(156, y, 4, '#d9d2c3')
-  for (let y = 6; y < 74; y++) s.hl(6, y, 148, y < 40 ? '#2aa3d6' : y < 58 ? '#2394cc' : '#1d86c0')
-  for (let x = 18; x < 154; x += 12) for (let y = 8; y < 74; y += 12) s.px(x, y, '#3bb3e2')
-  s.rect(6, 6, 148, 2, '#1b7fb0').rect(6, 6, 2, 68, '#1b7fb0')        // bayangan dinding kolam
-  const waves = [[20, 16], [52, 12], [96, 20], [128, 14], [36, 34], [80, 38], [116, 44], [24, 54], [64, 60], [104, 64], [140, 56]]
-  for (const [x, y] of waves) s.hl(x, y, 3, '#8fe3fb').hl(x + 3, y - 1, 3, '#8fe3fb').hl(x + 6, y, 3, '#8fe3fb')
-  s.rect(140, 3, 2, 16, '#c9d1d9').rect(146, 3, 2, 16, '#c9d1d9')    // tangga
-  for (const y of [8, 12, 16]) s.hl(140, y, 8, '#aeb7c0')
-  s.oval(46, 44, 7, 5, '#ff5a5f')                                       // pelampung
-  for (const [x, y] of [[40, 44], [52, 44], [46, 40], [46, 48]]) s.rect(x, y, 2, 1, '#ffffff')
-  s.oval(46, 44, 3, 2, '#2394cc')
+  s.hl(1, 0, 158, '#fbf8f0').hl(1, 79, 158, '#d6cebd')
+  for (let x = 8; x < 160; x += 8) s.vl(x, 1, 3, '#ddd5c5').vl(x, 76, 3, '#ddd5c5')
+  for (let y = 8; y < 80; y += 8) s.hl(1, y, 3, '#ddd5c5').hl(156, y, 3, '#ddd5c5')
+  s.frame(4, 4, 152, 72, '#c9c0ae')                                   // bibir kolam
+  // Air: makin dalam makin gelap (ujung kanan = bagian dalam)
+  const X0 = 6, Y0 = 6, W = 148, H = 68
+  for (let y = Y0; y < Y0 + H; y++) for (let x = X0; x < X0 + W; x++) {
+    const dalam = (x - X0) / W * 0.7 + (y - Y0) / H * 0.3
+    s.px(x, y, AIR[4 - Math.min(4, Math.floor(dalam * 4.2 + 0.6))])
+  }
+  // Garis lintasan di dasar kolam
+  for (const y of [22, 39, 56]) {
+    s.hl(22, y, 116, '#1a74ad').hl(22, y + 1, 116, '#1a74ad')
+    s.vl(20, y - 2, 6, '#1a74ad').vl(139, y - 2, 6, '#1a74ad')
+  }
+  // Caustic: tiga gelombang sinus; tiap suku waktu kelipatan bulat t supaya putaran mulus.
+  for (let y = Y0 + 2; y < Y0 + H; y++) for (let x = X0 + 2; x < X0 + W; x++) {
+    const v = Math.sin(0.31 * x + 0.17 * y + t) + Math.sin(-0.21 * x + 0.36 * y + 2 * t) + Math.sin(0.14 * x - 0.29 * y - t)
+    if (v > 2.35) s.px(x, y, '#9be3f8')
+    else if (v > 1.85) s.px(x, y, '#5cc6ec88')
+  }
+  // Bayangan dinding kolam (cahaya dari kanan-bawah)
+  s.rect(X0, Y0, W, 2, '#0f5f9a').rect(X0, Y0, 2, H, '#0f5f9a')
+  s.hl(X0 + 2, Y0 + 2, W - 2, '#1670b088').vl(X0 + 2, Y0 + 2, H - 2, '#1670b088')
+  // Riak putih: pola berjarak 24 px, bergeser 3 px per frame (24 / 8 frame = putaran mulus).
+  for (let row = 0; row < 5; row++) {
+    const y = Y0 + 9 + row * 13
+    for (let k = -1; k < 8; k++) {
+      const x = X0 + 4 + k * 24 + (row % 2) * 12 + ((f * 3) % 24)
+      if (x < X0 + 3 || x + 8 > X0 + W - 1) continue
+      s.hl(x, y, 2, '#c8f1ff').hl(x + 2, y - 1, 3, '#ffffff').hl(x + 5, y, 2, '#c8f1ff')
+    }
+  }
+  // Kilau matahari berkedip
+  for (let i = 0; i < 7; i++) {
+    const x = X0 + 10 + ((i * 53 + f * 29) % (W - 20))
+    const y = Y0 + 6 + ((i * 31 + f * 17) % (H - 12))
+    s.px(x, y, '#ffffff').px(x - 1, y, '#ffffff99').px(x + 1, y, '#ffffff99')
+  }
+  // Tangga
+  for (const x of [138, 146]) s.rect(x, 1, 2, 18, '#c9d1d9').vl(x, 1, 18, '#eef2f5')
+  for (const y of [9, 13, 17]) s.hl(138, y, 10, '#aeb7c0')
+  // Pelampung naik-turun + riak lingkaran yang melebar
+  const bob = Math.round(Math.sin(t) * 1.2)
+  const rx = 9 + (f % 4), ry = 6 + Math.floor((f % 4) * 0.7)
+  for (let a = 0; a < 40; a++) {
+    const sudut = (a / 40) * 2 * Math.PI
+    s.px(46 + Math.cos(sudut) * rx, 45 + Math.sin(sudut) * ry, f % 4 === 3 ? '#c8f1ff55' : '#c8f1ffaa')
+  }
+  s.oval(46, 46 + bob, 7, 5, '#00000030')
+  s.oval(46, 44 + bob, 7, 5, '#ff5a5f')
+  for (const [x, y] of [[40, 44], [52, 44], [46, 40], [46, 48]]) s.rect(x, y + bob, 2, 1, '#ffffff')
+  s.oval(46, 44 + bob, 3, 2, '#2394cc')
+  s.hl(43, 40 + bob, 3, '#ff9a9d')
   return s
 }
 
@@ -416,7 +476,7 @@ function beachUmbrella() {
   return s
 }
 
-function palmTree() {
+function palmTree(f = 0) {
   const s = new Spr(32, 64)
   s.oval(16, 61, 8, 2, '#00000025')
   for (let y = 22; y < 62; y++) {
@@ -430,10 +490,12 @@ function palmTree() {
     for (let i = 0; i <= 14; i++) {
       const t = i / 14
       const x = 16 + dx * t
-      const y = 17 + dy * t + 7 * t * t
+      const angin = [0, 1, 1.5, 1][f % 4] * t * t
+      const y = 17 + dy * t + 7 * t * t + (vertical ? 0 : angin * 0.5)
+      const xa = x + angin
       const w = Math.round(2.2 * (1 - t)) + 1
       for (let k = -w; k <= w; k++) {
-        s.px(x + (vertical ? k : 0), y + (vertical ? 0 : k), k === -w ? '#5ad67c' : k === w ? '#25803f' : '#34a853')
+        s.px(xa + (vertical ? k : 0), y + (vertical ? 0 : k), k === -w ? '#5ad67c' : k === w ? '#25803f' : '#34a853')
       }
     }
   }
@@ -449,24 +511,32 @@ const SINGLE = [
   ['MODERN_DESK', 'Meja Modern', 'desks', modernDesk, 3, 2, 1],
   ['OFFICE_CHAIR', 'Kursi Kantor', 'chairs', officeChairBack, 1, 1, 0],
   ['EXEC_DESK', 'Meja Eksekutif', 'desks', execDesk, 4, 2, 1],
-  ['AQUARIUM', 'Akuarium', 'decor', aquarium, 2, 2, 1],
   ['MEETING_TABLE', 'Meja Rapat', 'desks', meetingTable, 6, 2, 0],
   ['PRESENTATION_TV', 'TV Presentasi', 'wall', presentationTv, 3, 2, 0, { walls: true }],
-  ['GAME_TV', 'TV Game', 'wall', gameTv, 3, 2, 0, { walls: true }],
   ['KITCHEN_COUNTER', 'Kitchen Set', 'desks', kitchenCounter, 4, 2, 1],
   ['COFFEE_MACHINE', 'Mesin Kopi', 'misc', coffeeMachine, 1, 2, 1, { surfaces: true }],
   ['FRIDGE', 'Kulkas', 'storage', fridge, 1, 3, 2],
   ['WATER_DISPENSER', 'Dispenser Air', 'misc', waterDispenser, 1, 2, 1],
   ['TV_CONSOLE', 'Meja PS5', 'desks', tvConsole, 3, 1, 0],
   ['GAMING_CHAIR', 'Kursi Gaming', 'chairs', gamingChairBack, 1, 1, 0],
-  ['ARCADE_MACHINE', 'Mesin Arcade', 'misc', arcadeMachine, 1, 2, 1],
   ['BILLIARD_TABLE', 'Meja Biliar', 'misc', billiardTable, 4, 3, 1],
-  ['NEON_SIGN', 'Neon Game', 'wall', neonSign, 2, 2, 0, { walls: true }],
   ['BEAN_BAG', 'Bean Bag', 'decor', beanBag, 1, 1, 0],
-  ['SWIMMING_POOL', 'Kolam Renang', 'misc', swimmingPool, 10, 5, 0],
   ['SUN_LOUNGER', 'Kursi Berjemur', 'decor', sunLounger, 1, 2, 0],
   ['BEACH_UMBRELLA', 'Payung Pantai', 'decor', beachUmbrella, 2, 3, 2],
-  ['PALM_TREE', 'Pohon Kelapa', 'decor', palmTree, 2, 4, 3],
+]
+
+/**
+ * Furnitur beranimasi terus (animasi ambien, lihat patch-pixel-agents.mjs): id, nama, kategori,
+ * fungsi gambar(frame), jumlah frame, footprint, baris latar, opsi. Frame pertama memakai id
+ * lama supaya denah yang sudah ada (termasuk hasil editor Layout) tetap cocok.
+ */
+const ANIMASI = [
+  ['SWIMMING_POOL', 'Kolam Renang', 'misc', swimmingPool, FRAME_KOLAM, 10, 5, 0],
+  ['AQUARIUM', 'Akuarium', 'decor', aquarium, 4, 2, 2, 1],
+  ['GAME_TV', 'TV Game', 'wall', gameTv, 4, 3, 2, 0, { walls: true }],
+  ['ARCADE_MACHINE', 'Mesin Arcade', 'misc', arcadeMachine, 4, 1, 2, 1],
+  ['NEON_SIGN', 'Neon Game', 'wall', neonSign, 4, 2, 2, 0, { walls: true }],
+  ['PALM_TREE', 'Pohon Kelapa', 'decor', palmTree, 4, 2, 4, 3],
 ]
 
 function asset(id, spr, fw, fh, extra = {}) {
@@ -485,6 +555,20 @@ export function buildFurniture(outDir) {
       id, name, category, type: 'asset',
       canPlaceOnWalls: !!opt.walls, canPlaceOnSurfaces: !!opt.surfaces, backgroundTiles: bg,
       width: spr.w, height: spr.h, footprintW: fw, footprintH: fh,
+    }
+    fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
+    ids.push(id)
+  }
+
+  for (const [id, name, category, draw, n, fw, fh, bg, opt = {}] of ANIMASI) {
+    const dir = path.join(outDir, id)
+    const frames = Array.from({ length: n }, (_, i) => [i ? `${id}_ANIM_${i + 1}` : id, draw(i)])
+    for (const [nama, spr] of frames) spr.save(path.join(dir, `${nama}.png`))
+    const s = frames[0][1]
+    const manifest = {
+      id, name, category, type: 'group', groupType: 'animation',
+      canPlaceOnWalls: !!opt.walls, canPlaceOnSurfaces: !!opt.surfaces, backgroundTiles: bg,
+      members: frames.map(([nama], i) => asset(nama, s, fw, fh, { frame: i })),
     }
     fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
     ids.push(id)
