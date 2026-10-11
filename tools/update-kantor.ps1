@@ -19,7 +19,16 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'kantor-umum.ps1')
 Set-Location $KantorRoot
 
-if (git status --porcelain) {
+# File hasil `node bangun.mjs` / `npm install` di pixel-office\ dibuat ulang setiap Pixel Office
+# dipasang, dan isinya bisa sedikit berbeda antar-komputer (versi Node/npm). Itu bukan suntingan
+# Pak Ricko: kembalikan ke versi repo supaya git pull tidak terhalang.
+$hasilBangun = @('pixel-office/aset', 'pixel-office/layout-kantor.json', 'pixel-office/karakter.json', 'pixel-office/package-lock.json')
+foreach ($f in $hasilBangun) {
+  if (git ls-files -- $f) { git checkout -- $f 2>$null }
+}
+
+$lokal = @(git status --porcelain | Where-Object { $_ })
+if ($lokal.Count) {
   Write-Warning 'Ada perubahan lokal yang belum di-commit. Update dibatalkan supaya tidak bentrok.'
   git status --short
   exit 1

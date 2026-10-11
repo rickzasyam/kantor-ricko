@@ -9,3 +9,8 @@ access.json
 
 node_modules/
 pixel-office/node_modules/
+
+# Hasil `node bangun.mjs` (dibuat ulang setiap Pixel Office dipasang)
+pixel-office/aset/
+pixel-office/layout-kantor.json
+pixel-office/karakter.json

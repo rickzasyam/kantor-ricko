@@ -19,7 +19,7 @@ Peta file: lihat bagian "Isi folder" di `README.md`. Daftar karyawan + jabatan: 
 ## Kerja dari sesi cloud
 - Sesi cloud berjalan di Linux dan hanya punya salinan repo. **Tidak bisa** menjalankan/menguji: script PowerShell, Discord, Drive `G:`, Windows Terminal, karyawan yang sedang jalan, Pixel Office live.
 - Yang bisa diuji di cloud:
-  - Pixel Office: `cd pixel-office && npm ci && node patch-pixel-agents.mjs && node bangun.mjs` (patch harus "N patch terpasang", denah harus "Validasi denah: OK"). Jangan commit `node_modules/`.
+  - Pixel Office: `cd pixel-office && npm ci && node patch-pixel-agents.mjs && node bangun.mjs` (patch harus "N patch terpasang", denah harus "Validasi denah: OK"). Jangan commit `node_modules/`. Hasil bangun (`aset/`, `layout-kantor.json`, `karakter.json`) tidak disimpan di git: dibuat ulang di PC saat Pixel Office dipasang (byte PNG bisa beda antar-versi Node, dulu ini membuat Update Kantor tertahan "perubahan lokal").
   - Script Node: `node --check <file>`; `tools/interkom-log.mjs` bisa dites dengan server HTTP lokal + env `INTERKOM_WEBHOOK_FILE`.
   - Script PowerShell: minimal periksa sintaks kalau `pwsh` ada (`[System.Management.Automation.Language.Parser]::ParseFile`).
 - Kerjakan di branch, buka PR dengan deskripsi bahasa Indonesia: apa yang berubah, dan **cara menerapkannya**. Biasanya cukup: merge PR, lalu klik ikon **Update Kantor** di desktop (`tools/update-kantor.ps1`: pull, pasang ulang Pixel Office kalau `pixel-office/` berubah, buka ulang karyawan yang menganggur kalau aturan/pengaturan mereka berubah). Sebutkan juga apa yang perlu dicek Pak Ricko secara visual.

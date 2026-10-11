@@ -44,7 +44,7 @@ pixel-office/
   layout.mjs                denah kantor 50x36 (9 ruangan) + cek semua kursi bisa didatangi
   aktivitas.js              aktivitas karyawan saat menganggur (disuntikkan ke pixel-agents)
   patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien, aktivitas)
-  aset/                     hasil bangun: folder aset tambahan untuk pixel-agents
+  aset/                     hasil bangun: folder aset tambahan untuk pixel-agents (tidak disimpan di git)
 ```
 
 Token bot, daftar akses, dan URL webhook disimpan di `%USERPROFILE%\.claude\channels\kantor-ricko\` — **di luar** folder ini, jadi tidak ikut ke GitHub.
