@@ -30,7 +30,7 @@ const RUANG = [
   { label: 'Ruang Rapat', c: [23, 34], r: [2, 10], lantai: POLOS, warna: { h: 222, s: 40, b: -45, c: -85 }, area: '#63b3ed' },
   { label: 'Pantry', c: [36, 43], r: [2, 10], lantai: KOTAK_KECIL, warna: { h: 190, s: 22, b: 2, c: -35 }, area: '#68d391' },
   { label: 'Ruang Kerja', c: [2, 21], r: [12, 21], lantai: PAPAN, warna: { h: 34, s: 32, b: 2, c: -82 }, area: '#4fd1c5' },
-  { label: 'Lounge', c: [23, 28], r: [12, 21], lantai: UBIN, warna: { h: 210, s: 10, b: 2, c: -50 }, area: '#a0aec0' },
+  { label: 'Lounge', c: [23, 28], r: [12, 21], lantai: PAPAN, warna: { h: 35, s: 30, b: 15, c: 0 }, area: '#a0aec0' },
   { label: 'Ruang Game', c: [30, 43], r: [12, 21], lantai: POLOS, warna: { h: 265, s: 38, b: -48, c: -85 }, area: '#b794f4' },
   { label: 'Kolam Renang', c: [2, 43], r: [23, 31], lantai: UBIN, warna: { h: 40, s: 30, b: 12, c: -60 }, area: '#90cdf4' },
 ]
@@ -41,6 +41,7 @@ const PINTU = [
   { tiles: [[19, 11], [20, 11]], ke: 'Ruang Kerja' },
   { tiles: [[25, 11], [26, 11]], ke: 'Lounge' },
   { tiles: [[39, 11], [40, 11]], ke: 'Ruang Game' },
+  { tiles: [[22, 13]], ke: 'Lounge' },
   { tiles: [[22, 16], [22, 17]], ke: 'Lounge' },
   { tiles: [[29, 16], [29, 17]], ke: 'Lounge' },
   { tiles: [[25, 22], [26, 22]], ke: 'Kolam Renang' },
@@ -88,9 +89,9 @@ const FURNITUR = [
   ['COFFEE', 11, 14], ['COFFEE', 5, 18], ['COFFEE', 17, 18],
   ['PLANT', 2, 13], ['PLANT', 21, 13], ['LARGE_PLANT', 20, 18], ['WATER_DISPENSER', 2, 19],
 
-  // Lounge
-  ['CACTUS', 23, 12], ['PLANT', 28, 12],
-  ['SOFA_SIDE', 23, 18], ['COFFEE_TABLE', 24, 18], ['LARGE_PLANT', 27, 18],
+  // Lounge (susunan sofa dari Pak Ricko; sofa depan & kanan ada di akhir daftar supaya uid tetap)
+  ['CACTUS', 23, 19], ['PLANT', 28, 12],
+  ['SOFA_SIDE', 24, 14], ['COFFEE_TABLE', 25, 14], ['LARGE_PLANT', 27, 18],
 
   // Ruang Game
   ['GAME_TV', 31, 10], ['NEON_SIGN', 42, 10],
@@ -106,6 +107,9 @@ const FURNITUR = [
   ['SUN_LOUNGER', 35, 26], ['SUN_LOUNGER', 36, 26],
   ['PALM_TREE', 3, 23], ['PALM_TREE', 11, 23], ['PALM_TREE', 40, 23], ['PALM_TREE', 3, 27], ['PALM_TREE', 40, 27],
   ['BEAN_BAG', 8, 28], ['BEAN_BAG', 9, 29],
+
+  // Tambahan Lounge
+  ['SOFA_SIDE:left', 27, 14], ['SOFA_FRONT', 25, 13],
 ]
 
 // Hewan peliharaan bawaan pixel-agents, berkeliaran di kantor.
@@ -119,6 +123,7 @@ function bacaKatalog(dirs) {
       katalog.set(m.id, {
         fw: m.footprintW, fh: m.footprintH, bg: root.backgroundTiles ?? 0,
         dinding: !!root.canPlaceOnWalls, permukaan: !!root.canPlaceOnSurfaces,
+        kursi: root.category === 'chairs',
       })
     }
     for (const child of m.members ?? []) tambah(child, root)
@@ -130,6 +135,51 @@ function bacaKatalog(dirs) {
     }
   }
   return katalog
+}
+
+/**
+ * Semua kursi harus bisa didatangi karakter dari Ruang Kerja (tanpa menembus dinding atau
+ * furnitur). Kursi yang terkurung membuat karyawan tidak bisa pindah ke sana -- misalnya
+ * Ruang Rapat yang pintunya tertutup sofa. Mengembalikan daftar masalah.
+ */
+function cekJangkauan(layout, katalog) {
+  const { cols, rows, tiles, areaTiles, furniture } = layout
+  const idx = (c, r) => r * cols + c
+  const terhalang = new Set()
+  const kursi = []
+  for (const f of furniture) {
+    const info = katalog.get(f.type.replace(/:left$/, ''))
+    if (!info || info.dinding || info.permukaan) continue
+    for (let r = f.row + info.bg; r < f.row + info.fh; r++) for (let c = f.col; c < f.col + info.fw; c++) terhalang.add(idx(c, r))
+    if (info.kursi) kursi.push(f)
+  }
+  const bisaDiinjak = i => tiles[i] !== WALL && tiles[i] !== VOID && !terhalang.has(i)
+  const mulai = areaTiles.findIndex((a, i) => a === 'Ruang Kerja' && bisaDiinjak(i))
+  if (mulai < 0) return ['tidak ada lantai kosong di Ruang Kerja']
+  const tercapai = new Set([mulai])
+  const antre = [mulai]
+  while (antre.length) {
+    const i = antre.shift()
+    const c = i % cols, r = Math.floor(i / cols)
+    for (const [dc, dr] of [[0, -1], [0, 1], [-1, 0], [1, 0]]) {
+      const nc = c + dc, nr = r + dr, j = idx(nc, nr)
+      if (nc < 0 || nr < 0 || nc >= cols || nr >= rows || tercapai.has(j) || !bisaDiinjak(j)) continue
+      tercapai.add(j)
+      antre.push(j)
+    }
+  }
+  const masalah = []
+  for (const f of kursi) {
+    const c = f.col, r = f.row
+    const dekat = [[c, r - 1], [c, r + 1], [c - 1, r], [c + 1, r]].some(([x, y]) => tercapai.has(idx(x, y)))
+    if (!dekat) masalah.push(`${f.type} (${c},${r}) di ${areaTiles[idx(c, r)] ?? 'luar ruangan'} tidak bisa didatangi -- jalannya tertutup furnitur/dinding`)
+  }
+  return masalah
+}
+
+/** Periksa denah lain (mis. ~/.pixel-agents/layout.json yang diedit lewat editor Layout). */
+export function periksaJangkauan(layout, furnitureDirs) {
+  return cekJangkauan(layout, bacaKatalog(furnitureDirs))
 }
 
 export function buildLayout(furnitureDirs) {
@@ -184,5 +234,6 @@ export function buildLayout(furnitureDirs) {
     areaTiles,
     pets: PETS.map(petType => ({ id: `kantor-${petType}`, petType })),
   }
+  masalah.push(...cekJangkauan(layout, katalog))
   return { layout, masalah }
 }

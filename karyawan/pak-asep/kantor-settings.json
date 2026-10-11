@@ -11,7 +11,7 @@
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60"
   },
   "permissions": {
-    "allow": ["mcp__plugin_discord_discord"],
+    "allow": ["mcp__plugin_discord_discord", "Bash(node ../../tools/rapat.mjs *)"],
     "additionalDirectories": ["G:\\My Drive\\Kantor Ricko"]
   },
   "hooks": {

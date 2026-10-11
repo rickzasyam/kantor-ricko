@@ -28,6 +28,7 @@ tools/
   kantor-umum.ps1           fungsi bersama script kantor
   pasang-shortcut.ps1       autostart Windows + ikon desktop (-Hapus untuk melepas)
   interkom-log.mjs          salin pesan interkom ke #ruang-rapat
+  rapat.mjs                 mode rapat: karakter peserta berkumpul di Ruang Rapat Pixel Office
 ```
 
 ```
@@ -35,8 +36,8 @@ pixel-office/
   bangun.mjs                bangun furnitur, karakter, denah (node bangun.mjs)
   furnitur.mjs              23 furnitur kustom digambar piksel per piksel
   karakter.mjs              karakter tetap per karyawan + 2 karakter kustom (Ayu, Ricko)
-  layout.mjs                denah kantor 46x34 (8 ruangan)
-  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan)
+  layout.mjs                denah kantor 46x34 (8 ruangan) + cek semua kursi bisa didatangi
+  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat)
   aset/                     hasil bangun: folder aset tambahan untuk pixel-agents
 ```
 
@@ -110,7 +111,7 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Ruang Rapat | meja rapat walnut 14 kursi, TV presentasi | - |
 | Pantry | kitchen set, mesin kopi, kulkas, dispenser, meja makan | - |
 | Ruang Kerja | 6 meja putih + PC modern (layar menyala saat bekerja) | Kokom, Ujang, Joko, Neneng, Ayu |
-| Lounge | sofa, tanaman | - |
+| Lounge | set sofa + meja kopi (susunan Pak Ricko), tanaman | - |
 | Ruang Game | TV + PS5, kursi gaming, 2 mesin arcade, meja biliar, neon, bean bag | - |
 | Kolam Renang | kolam, kursi berjemur, payung, pohon kelapa, taman | - |
 
@@ -119,6 +120,25 @@ Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep ja
 - Pasang / perbarui tampilan: `.\tools\pasang-pixel-office.ps1 -MulaiUlang`
 - Kembalikan denah ke desain ini setelah diedit di editor Layout: `.\tools\pasang-pixel-office.ps1 -TimpaLayout -MulaiUlang`
 - Ubah desain: edit `pixel-office/furnitur.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
+- Setelah mengedit denah lewat editor Layout, `pasang-pixel-office.ps1` memperingatkan kalau ada kursi yang jalannya tertutup furnitur (karakter tidak akan bisa ke sana).
+- Karyawan yang duduk di luar ruangannya otomatis dipindah kembali ke ruangannya.
+
+## Rapat & kerja bareng
+
+Minta rapat lewat Pak Asep, misalnya di `#lobby`: `@Pak Asep rapat kickoff proyek X dengan Kokom dan Ujang`.
+
+1. Pak Asep menentukan agenda dan peserta, lalu menjalankan `node tools/rapat.mjs mulai`. Karakter peserta berjalan ke **Ruang Rapat** dan duduk di sana; Pak Asep di kepala meja.
+2. Putaran pendapat dan tanggapan lewat interkom. Semuanya tampil di `#ruang-rapat`.
+3. Notulen disimpan di `00 Kantor Bersama/Rapat/`, ringkasannya dikirim ke Discord, lalu `rapat.mjs selesai` mengembalikan semua ke mejanya. Kalau lupa ditutup, rapat berakhir sendiri setelah 60 menit.
+
+Di luar rapat, karyawan saling menghubungi langsung (tanya data, serah terima, laporan QA) dan cukup mengabari Pak Asep. Aturannya ada di bagian "Kerja bareng" dan "Rapat" di `karyawan/CLAUDE.md`.
+
+Mode rapat bisa juga dijalankan manual:
+```powershell
+node tools/rapat.mjs mulai --topik "Kickoff" --peserta pak-asep,kokom,ujang --menit 30
+node tools/rapat.mjs status
+node tools/rapat.mjs selesai
+```
 
 ## Ingatan karyawan
 

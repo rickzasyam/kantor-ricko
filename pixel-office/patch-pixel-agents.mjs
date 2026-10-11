@@ -1,11 +1,21 @@
-// Patch pixel-agents 1.4.1 untuk Kantor Ricko. Diterapkan ke salinan asli dist/cli.js
-// (disimpan sebagai cli.js.asli), jadi aman dijalankan berulang kali dan setelah patch diubah.
+// Patch pixel-agents 1.4.1 untuk Kantor Ricko. Diterapkan ke salinan asli tiap file
+// (disimpan sebagai <file>.asli), jadi aman dijalankan berulang kali dan setelah patch diubah.
 //
+// Server (dist/cli.js):
 // 1. Karakter tetap per karyawan: fungsi pemilih karakter (`ae`) membaca file JSON di env
 //    KANTOR_KARAKTER ({ "<nama folder>": <nomor karakter> }) sebelum mengundi karakter.
 // 2. Pulihkan karyawan saat server menyala: bawaannya agen lama baru dipulihkan saat browser
 //    tersambung, padahal sebelum itu server sudah menimpa daftar agen dengan sesi yang baru
 //    terdeteksi -- karyawan yang sedang menganggur jadi hilang dari kantor.
+// 3. Mode rapat: tiap 3 detik server membaca ~/.pixel-agents/kantor-rapat.json (ditulis
+//    tools/rapat.mjs) dan menyiarkannya ke browser sebagai pesan `kantorRapat`.
+//
+// Tampilan (dist/webview/assets/index-*.js):
+// 4. Mode rapat: selama rapat aktif, karakter peserta pindah ke kursi di Ruang Rapat dan tetap
+//    duduk di sana (tidak jalan-jalan). Pemimpin rapat duduk di kepala meja (kursi paling kiri).
+//    Setelah rapat selesai mereka kembali ke kursi semula. Kursi rapat tidak disimpan ke server.
+//    Sekalian penjaga ruangan: karyawan yang duduk di luar ruangannya (areaMappings) -- misalnya
+//    karena kursinya terpilih sebelum pembagian ruangan termuat -- dipindah ke ruangannya.
 //
 // Jalankan ulang setelah `npm install`.
 import fs from 'node:fs'
@@ -14,46 +24,158 @@ import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const PKG = path.join(HERE, 'node_modules', 'pixel-agents')
-const CLI = path.join(PKG, 'dist', 'cli.js')
-const ASLI = `${CLI}.asli`
+const DIST = path.join(PKG, 'dist')
 
-const PATCHES = [
-  {
-    nama: 'karakter tetap per karyawan',
-    cari: 'function ae(t,e){if(t.palette!==void 0)return;',
-    ganti:
-      'var __kantorPeta;function __kantorKarakter(t){try{if(__kantorPeta===void 0){var f=process.env.KANTOR_KARAKTER;' +
-      '__kantorPeta=f?JSON.parse(require("fs").readFileSync(f,"utf8")):null}}catch(e){__kantorPeta=null}' +
-      'if(!__kantorPeta||!t.folderName)return void 0;var v=__kantorPeta[String(t.folderName).toLowerCase()];' +
-      'return typeof v==="number"&&v>=0&&v<64?v:void 0}' +
-      'function ae(t,e){var __k=__kantorKarakter(t);if(__k!==void 0){t.palette=__k;t.hueShift=0;return}' +
-      'if(t.palette!==void 0)return;',
-  },
-  {
-    nama: 'pulihkan karyawan saat server menyala',
-    cari: 'u.startProjectScan(x),u.startExternalScanning(x),u.startStaleCheck()',
-    ganti: 'u.restoreExternalAgents(),u.startProjectScan(x),u.startExternalScanning(x),u.startStaleCheck()',
-  },
+const KARAKTER_TETAP = {
+  nama: 'karakter tetap per karyawan',
+  cari: 'function ae(t,e){if(t.palette!==void 0)return;',
+  ganti:
+    'var __kantorPeta;function __kantorKarakter(t){try{if(__kantorPeta===void 0){var f=process.env.KANTOR_KARAKTER;' +
+    '__kantorPeta=f?JSON.parse(require("fs").readFileSync(f,"utf8")):null}}catch(e){__kantorPeta=null}' +
+    'if(!__kantorPeta||!t.folderName)return void 0;var v=__kantorPeta[String(t.folderName).toLowerCase()];' +
+    'return typeof v==="number"&&v>=0&&v<64?v:void 0}' +
+    'function ae(t,e){var __k=__kantorKarakter(t);if(__k!==void 0){t.palette=__k;t.hueShift=0;return}' +
+    'if(t.palette!==void 0)return;',
+}
+
+const PULIHKAN_KARYAWAN = {
+  nama: 'pulihkan karyawan saat server menyala',
+  cari: 'u.startProjectScan(x),u.startExternalScanning(x),u.startStaleCheck()',
+  ganti: 'u.restoreExternalAgents(),u.startProjectScan(x),u.startExternalScanning(x),u.startStaleCheck()',
+}
+
+// `c` = penyimpan agen (punya .broadcast ke semua browser) di fungsi utama server.
+const RAPAT_SERVER = {
+  nama: 'siarkan status rapat',
+  cari: 'let A=t.host==="0.0.0.0"',
+  ganti:
+    '(function(st){var fs=require("fs"),f=require("path").join(require("os").homedir(),".pixel-agents","kantor-rapat.json");' +
+    'setInterval(function(){var d=null;try{d=JSON.parse(fs.readFileSync(f,"utf8"))}catch(e){d=null}' +
+    'var aktif=!!(d&&d.aktif&&(!d.sampai||Date.parse(d.sampai)>Date.now()));' +
+    'st.broadcast(Object.assign({},d||{},{type:"kantorRapat",aktif:aktif}))},3000).unref()})(c);' +
+    'let A=t.host==="0.0.0.0"',
+}
+
+const RAPAT_TERIMA = {
+  nama: 'terima status rapat',
+  cari: 's.type===`areaMappingsLoaded`){',
+  ganti: 's.type===`kantorRapat`){window.__kantorRapatData=s}else if(s.type===`areaMappingsLoaded`){',
+}
+
+// `lo` = ref ke OfficeState (lo.current): characters, seats, seatZone, reassignSeat, ...
+const RAPAT_TAMPILAN = {
+  nama: 'karakter berkumpul di ruang rapat',
+  cari: 'var lo={current:null},U=new Pa;g&&co(lo);',
+  ganti: 'var lo={current:null},U=new Pa;g&&co(lo);__kantorRapatMulai(lo);' + `
+function __kantorRapatMulai(ref){
+  if(typeof window==="undefined")return;
+  window.__kantorOffice=ref;
+  var asal=new Map(),dibungkus=false;
+  function nama(ch){return String(ch&&ch.folderName||"").toLowerCase()}
+  function ikut(ch){
+    var r=window.__kantorRapatData;
+    if(!r||!r.aktif||!ch||ch.isSubagent||!ch.folderName)return false;
+    return !Array.isArray(r.peserta)||r.peserta.map(function(x){return String(x).toLowerCase()}).indexOf(nama(ch))>=0;
+  }
+  setInterval(function(){
+    var os=ref.current;if(!os)return;
+    if(!dibungkus){
+      dibungkus=true;
+      var asli=os.setAgentActive;
+      os.setAgentActive=function(id,aktif){
+        asli.call(this,id,aktif);
+        var ch=this.characters.get(id);
+        if(!aktif&&ikut(ch))ch.seatTimer=600;
+      };
+    }
+    var r=window.__kantorRapatData,ruang=(r&&r.ruang)||"Ruang Rapat",pemimpin=String(r&&r.pemimpin||"").toLowerCase();
+    var kepala=null;
+    os.seats.forEach(function(s,id){
+      if(os.seatZone(id)!==ruang)return;
+      var k=kepala&&os.seats.get(kepala);
+      if(!k||s.seatCol<k.seatCol||(s.seatCol===k.seatCol&&s.seatRow<k.seatRow))kepala=id;
+    });
+    var berubah=false;
+    os.characters.forEach(function(ch){
+      if(ch.isSubagent)return;
+      var zona=ch.seatId?os.seatZone(ch.seatId):null;
+      if(ikut(ch)){
+        if(zona!==ruang){
+          var bebas=[];
+          os.seats.forEach(function(s,id){if(!s.assigned&&os.seatZone(id)===ruang)bebas.push(id)});
+          var pilih=null;
+          if(pemimpin&&nama(ch)===pemimpin&&bebas.indexOf(kepala)>=0)pilih=kepala;
+          else{
+            var lain=bebas.filter(function(id){return id!==kepala||!pemimpin});
+            if(!lain.length)lain=bebas;
+            if(lain.length)pilih=lain[Math.floor(Math.random()*lain.length)];
+          }
+          if(!pilih)return;
+          if(!asal.has(ch.id))asal.set(ch.id,ch.seatId||null);
+          os.reassignSeat(ch.id,pilih);
+          if(!ch.isActive)ch.seatTimer=600;
+          berubah=true;
+        }else if(!ch.isActive){
+          if(ch.state==="idle")os.sendToSeat(ch.id);
+          else if(ch.state==="type"&&ch.seatTimer<300)ch.seatTimer=600;
+        }
+      }else{
+        // Bukan peserta rapat: kembali dari rapat, atau pindahkan kalau duduk di luar ruangannya.
+        var izin=os.areaMappings&&os.areaMappings[ch.folderName];
+        var bolehDi=function(id){return !!id&&(!izin||!izin.length||izin.indexOf(os.seatZone(id))>=0)};
+        var lama=asal.get(ch.id);asal.delete(ch.id);
+        var dariRapat=lama!==undefined&&zona===ruang;
+        if(!dariRapat&&!(ch.seatId&&zona!==null&&!bolehDi(ch.seatId)))return;
+        var s=lama&&os.seats.get(lama);
+        var tujuan=s&&!s.assigned&&bolehDi(lama)?lama:os.findFreeSeat(ch.folderName);
+        if(!bolehDi(tujuan))return;
+        os.reassignSeat(ch.id,tujuan);
+        berubah=true;
+      }
+    });
+    if(berubah){
+      if(os.rebuildFurnitureInstances)os.rebuildFurnitureInstances();
+      // Simpan kursi (bukan kursi rapat) supaya posisinya tetap saat Pixel Office dibuka lagi.
+      if(!(r&&r.aktif)&&typeof Sa==="function")Sa(os);
+    }
+  },1500);
+}
+`,
+}
+
+function bundelTampilan() {
+  const html = fs.readFileSync(path.join(DIST, 'webview', 'index.html'), 'utf8')
+  const m = html.match(/assets\/(index-[\w-]+\.js)/)
+  if (!m) throw new Error('bundel tampilan (assets/index-*.js) tidak ditemukan di webview/index.html')
+  return path.join(DIST, 'webview', 'assets', m[1])
+}
+
+const TARGET = [
+  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN] },
 ]
 
 const versi = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8')).version
-if (!fs.existsSync(ASLI)) {
-  const sekarang = fs.readFileSync(CLI, 'utf8')
-  if (sekarang.includes('__kantorKarakter')) {
-    console.error('cli.js sudah ter-patch tapi salinan aslinya tidak ada. Pasang ulang: hapus node_modules\\pixel-agents lalu npm install.')
-    process.exit(1)
+const terpasang = []
+for (const { file, penanda, patches } of TARGET) {
+  const asli = `${file}.asli`
+  if (!fs.existsSync(asli)) {
+    if (fs.readFileSync(file, 'utf8').includes(penanda)) {
+      console.error(`${path.basename(file)} sudah ter-patch tapi salinan aslinya tidak ada. Pasang ulang: hapus node_modules\\pixel-agents lalu npm install.`)
+      process.exit(1)
+    }
+    fs.copyFileSync(file, asli)
   }
-  fs.copyFileSync(CLI, ASLI)
-}
-
-let js = fs.readFileSync(ASLI, 'utf8')
-for (const p of PATCHES) {
-  const jumlah = js.split(p.cari).length - 1
-  if (jumlah !== 1) {
-    console.error(`pixel-agents ${versi}: titik patch "${p.nama}" ditemukan ${jumlah}x (harus 1). Versi berubah? Patch dibatalkan.`)
-    process.exit(1)
+  let js = fs.readFileSync(asli, 'utf8')
+  for (const p of patches) {
+    const jumlah = js.split(p.cari).length - 1
+    if (jumlah !== 1) {
+      console.error(`pixel-agents ${versi}: titik patch "${p.nama}" ditemukan ${jumlah}x di ${path.basename(file)} (harus 1). Versi berubah? Patch dibatalkan.`)
+      process.exit(1)
+    }
+    js = js.replace(p.cari, () => p.ganti)
   }
-  js = js.replace(p.cari, p.ganti)
+  fs.writeFileSync(file, js)
+  terpasang.push(...patches.map(p => p.nama))
 }
-fs.writeFileSync(CLI, js)
-console.log(`pixel-agents ${versi}: ${PATCHES.length} patch terpasang (${PATCHES.map(p => p.nama).join('; ')}).`)
+console.log(`pixel-agents ${versi}: ${terpasang.length} patch terpasang (${terpasang.join('; ')}).`)
