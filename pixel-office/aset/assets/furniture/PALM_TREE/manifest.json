@@ -2,12 +2,51 @@
   "id": "PALM_TREE",
   "name": "Pohon Kelapa",
   "category": "decor",
-  "type": "asset",
+  "type": "group",
+  "groupType": "animation",
   "canPlaceOnWalls": false,
   "canPlaceOnSurfaces": false,
   "backgroundTiles": 3,
-  "width": 32,
-  "height": 64,
-  "footprintW": 2,
-  "footprintH": 4
+  "members": [
+    {
+      "type": "asset",
+      "id": "PALM_TREE",
+      "file": "PALM_TREE.png",
+      "width": 32,
+      "height": 64,
+      "footprintW": 2,
+      "footprintH": 4,
+      "frame": 0
+    },
+    {
+      "type": "asset",
+      "id": "PALM_TREE_ANIM_2",
+      "file": "PALM_TREE_ANIM_2.png",
+      "width": 32,
+      "height": 64,
+      "footprintW": 2,
+      "footprintH": 4,
+      "frame": 1
+    },
+    {
+      "type": "asset",
+      "id": "PALM_TREE_ANIM_3",
+      "file": "PALM_TREE_ANIM_3.png",
+      "width": 32,
+      "height": 64,
+      "footprintW": 2,
+      "footprintH": 4,
+      "frame": 2
+    },
+    {
+      "type": "asset",
+      "id": "PALM_TREE_ANIM_4",
+      "file": "PALM_TREE_ANIM_4.png",
+      "width": 32,
+      "height": 64,
+      "footprintW": 2,
+      "footprintH": 4,
+      "frame": 3
+    }
+  ]
 }
