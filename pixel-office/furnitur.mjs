@@ -3,6 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { Spr } from './lib/sprite.mjs'
+import { GENZ_ANIMASI, GENZ_ROTASI, GENZ_SINGLE, kursiKantorPastel } from './furnitur-genz.mjs'
 
 const SHADOW = '#00000033'
 
@@ -85,49 +86,36 @@ function modernDesk() {
   return s
 }
 
-function officeChairBack() {
-  const s = new Spr(16, 16)
-  s.rrect(3, 0, 10, 9, '#2c313d')
-  for (let y = 2; y < 8; y += 2) s.hl(4, y, 8, '#363c4b')   // jaring
-  s.hl(4, 0, 8, '#454c5e')
-  s.rect(1, 6, 2, 5, '#232731').rect(13, 6, 2, 5, '#232731')
-  s.rect(2, 9, 12, 3, '#3a4050').hl(2, 9, 12, '#4a5163')
-  s.rect(7, 12, 2, 2, '#7c8494')
-  s.hl(3, 14, 10, '#1d2029')
-  for (const x of [3, 7, 12]) s.px(x, 15, '#111318')
-  return s
-}
-
 // ----------------------------------------------------- Ruang Ricko & Pak Asep
 
+// Meja & kursi pimpinan versi gen-Z: meja kayu oak terang + panel krem, lampu LED ungu di
+// bawah meja, keyboard mekanik warna-warni; kursi ergonomis hitam-lilac.
 function execDesk() {
   const s = new Spr(64, 32)
-  s.rect(1, 9, 62, 15, '#6e3b29')                         // permukaan mahoni
-  s.hl(1, 9, 62, '#8f5238')
-  s.vl(1, 10, 14, '#5a3020').vl(62, 10, 14, '#5a3020')
-  for (const y of [12, 17, 21]) s.hl(3, y, 58, '#74402d')
-  s.rect(18, 12, 28, 9, '#2f4a3c').frame(18, 12, 28, 9, '#3f604e')   // alas tulis kulit
-  s.rect(49, 13, 7, 6, '#f3efe6').hl(50, 15, 5, '#c9c2b4').hl(50, 17, 4, '#c9c2b4')  // kertas
-  s.line(6, 19, 12, 16, '#d8b04a')                        // pena emas
-  s.hl(1, 23, 62, '#4f2a1d')
-  s.rect(1, 24, 62, 6, '#5a2f20')                         // panel depan
-  s.hl(1, 24, 62, '#c99b3c')                              // list emas
-  for (const [x, w] of [[3, 17], [22, 20], [44, 17]]) {
-    s.frame(x, 25, w, 4, '#4a2619')
-    s.hl(x + Math.floor(w / 2) - 1, 27, 3, '#d8b04a')
-  }
-  s.hl(1, 30, 62, '#2e170f')
+  s.rect(1, 9, 62, 15, '#e3b47a')                         // permukaan oak terang
+  s.hl(1, 9, 62, '#f3cf9b')
+  s.vl(1, 10, 14, '#c99558').vl(62, 10, 14, '#c99558')
+  for (const y of [13, 18]) s.hl(3, y, 58, '#dcab70')
+  s.rect(17, 12, 30, 9, '#3a3058').frame(17, 12, 30, 9, '#4b3f7a')   // desk mat
+  for (let i = 0; i < 8; i++) s.px(20 + i * 3, 18, ['#ff6b81', '#ffd166', '#5fe0b0', '#7cc6ff'][i % 4]).px(21 + i * 3, 18, '#e9edf2')  // keyboard
+  s.rect(49, 13, 7, 6, '#fff6e5').hl(50, 15, 5, '#c9c2b4').hl(50, 17, 4, '#c9c2b4')
+  s.oval(9, 15, 3, 2, '#4fbf6f').rect(8, 16, 3, 3, '#ff8fd0')       // sukulen di pot pink
+  s.hl(1, 23, 62, '#c99558')
+  s.rect(1, 24, 62, 5, '#fff6e5')                         // panel depan krem
+  s.hl(1, 24, 62, '#ffd166')
+  for (const x of [20, 43]) s.vl(x, 25, 4, '#e8dcc6')
+  s.hl(1, 29, 62, '#b79cff').hl(2, 30, 60, '#b79cff66')  // LED ungu
   s.hl(2, 31, 60, SHADOW)
   return s
 }
 
-const LEATHER = '#5b2f20'
+const LEATHER = '#2b2540'
 function execChairFront() {
   const s = new Spr(16, 16)
-  s.rrect(3, 0, 10, 9, LEATHER).hl(4, 0, 8, '#7b4430')
-  for (const [x, y] of [[5, 3], [8, 3], [11, 3], [6, 6], [10, 6]]) s.px(x, y, '#3d1f15')
-  s.rect(2, 8, 12, 4, '#6b3826').hl(2, 8, 12, '#8a4c34')
-  s.rect(1, 6, 2, 6, '#4a2518').rect(13, 6, 2, 6, '#4a2518')
+  s.rrect(3, 0, 10, 9, LEATHER).hl(4, 0, 8, '#4b3f7a')
+  s.vl(5, 1, 7, '#b79cff').vl(10, 1, 7, '#b79cff')
+  s.rect(2, 8, 12, 4, '#3a3058').hl(2, 8, 12, '#5a4b8a')
+  s.rect(1, 6, 2, 6, '#1d1830').rect(13, 6, 2, 6, '#1d1830')
   s.rect(7, 12, 2, 2, '#9aa2ae')
   s.hl(3, 14, 10, '#1d2029')
   for (const x of [3, 7, 12]) s.px(x, 15, '#111318')
@@ -135,9 +123,9 @@ function execChairFront() {
 }
 function execChairBack() {
   const s = new Spr(16, 16)
-  s.rrect(3, 0, 10, 10, '#4f281b').hl(4, 0, 8, '#6b3826')
-  s.vl(8, 1, 8, '#43221a')
-  s.rect(1, 6, 2, 5, '#4a2518').rect(13, 6, 2, 5, '#4a2518')
+  s.rrect(3, 0, 10, 10, '#241f38').hl(4, 0, 8, '#3a3058')
+  s.vl(5, 1, 8, '#b79cff').vl(10, 1, 8, '#b79cff')
+  s.rect(1, 6, 2, 5, '#1d1830').rect(13, 6, 2, 5, '#1d1830')
   s.rect(2, 10, 12, 2, LEATHER)
   s.rect(7, 12, 2, 2, '#9aa2ae')
   s.hl(3, 14, 10, '#1d2029')
@@ -146,9 +134,9 @@ function execChairBack() {
 }
 function execChairSide() {
   const s = new Spr(16, 16)
-  s.rect(2, 0, 3, 10, LEATHER).vl(2, 0, 10, '#7b4430')
-  s.rect(3, 8, 10, 3, '#6b3826').hl(3, 8, 10, '#8a4c34')
-  s.rect(5, 6, 7, 2, '#4a2518')
+  s.rect(2, 0, 3, 10, LEATHER).vl(2, 0, 10, '#4b3f7a').vl(3, 1, 8, '#b79cff')
+  s.rect(3, 8, 10, 3, '#3a3058').hl(3, 8, 10, '#5a4b8a')
+  s.rect(5, 6, 7, 2, '#1d1830')
   s.rect(7, 11, 2, 3, '#9aa2ae')
   s.hl(3, 14, 10, '#1d2029').px(3, 15, '#111318').px(12, 15, '#111318')
   return s
@@ -509,7 +497,7 @@ function palmTree(f = 0) {
 /** id, nama, kategori, sprite, footprint (tile), baris latar, opsi penempatan */
 const SINGLE = [
   ['MODERN_DESK', 'Meja Modern', 'desks', modernDesk, 3, 2, 1],
-  ['OFFICE_CHAIR', 'Kursi Kantor', 'chairs', officeChairBack, 1, 1, 0],
+  ['OFFICE_CHAIR', 'Kursi Kantor', 'chairs', kursiKantorPastel, 1, 1, 0],
   ['EXEC_DESK', 'Meja Eksekutif', 'desks', execDesk, 4, 2, 1],
   ['MEETING_TABLE', 'Meja Rapat', 'desks', meetingTable, 6, 2, 0],
   ['PRESENTATION_TV', 'TV Presentasi', 'wall', presentationTv, 3, 2, 0, { walls: true }],
@@ -523,6 +511,7 @@ const SINGLE = [
   ['BEAN_BAG', 'Bean Bag', 'decor', beanBag, 1, 1, 0],
   ['SUN_LOUNGER', 'Kursi Berjemur', 'decor', sunLounger, 1, 2, 0],
   ['BEACH_UMBRELLA', 'Payung Pantai', 'decor', beachUmbrella, 2, 3, 2],
+  ...GENZ_SINGLE,
 ]
 
 /**
@@ -537,6 +526,7 @@ const ANIMASI = [
   ['ARCADE_MACHINE', 'Mesin Arcade', 'misc', arcadeMachine, 4, 1, 2, 1],
   ['NEON_SIGN', 'Neon Game', 'wall', neonSign, 4, 2, 2, 0, { walls: true }],
   ['PALM_TREE', 'Pohon Kelapa', 'decor', palmTree, 4, 2, 4, 3],
+  ...GENZ_ANIMASI,
 ]
 
 function asset(id, spr, fw, fh, extra = {}) {
@@ -610,20 +600,23 @@ export function buildFurniture(outDir) {
     ids.push(id)
   }
 
-  // Kursi eksekutif: depan / belakang / samping (samping dicerminkan otomatis).
-  {
-    const id = 'EXEC_CHAIR'
+  // Kursi berputar: depan / belakang / samping (samping dicerminkan otomatis).
+  const kursi = [
+    ['EXEC_CHAIR', 'Kursi Eksekutif', { depan: execChairFront, belakang: execChairBack, samping: execChairSide }],
+    ...GENZ_ROTASI,
+  ]
+  for (const [id, name, gambar] of kursi) {
     const dir = path.join(outDir, id)
-    const sprites = { EXEC_CHAIR_FRONT: execChairFront(), EXEC_CHAIR_BACK: execChairBack(), EXEC_CHAIR_SIDE: execChairSide() }
-    for (const [name, spr] of Object.entries(sprites)) spr.save(path.join(dir, `${name}.png`))
-    const s = sprites.EXEC_CHAIR_FRONT
+    const sprites = { [`${id}_FRONT`]: gambar.depan(), [`${id}_BACK`]: gambar.belakang(), [`${id}_SIDE`]: gambar.samping() }
+    for (const [nama, spr] of Object.entries(sprites)) spr.save(path.join(dir, `${nama}.png`))
+    const s = sprites[`${id}_FRONT`]
     const manifest = {
-      id, name: 'Kursi Eksekutif', category: 'chairs', type: 'group', groupType: 'rotation',
+      id, name, category: 'chairs', type: 'group', groupType: 'rotation',
       rotationScheme: '3-way-mirror', canPlaceOnWalls: false, canPlaceOnSurfaces: false, backgroundTiles: 0,
       members: [
-        asset('EXEC_CHAIR_FRONT', s, 1, 1, { orientation: 'front' }),
-        asset('EXEC_CHAIR_BACK', s, 1, 1, { orientation: 'back' }),
-        asset('EXEC_CHAIR_SIDE', s, 1, 1, { orientation: 'side', mirrorSide: true }),
+        asset(`${id}_FRONT`, s, 1, 1, { orientation: 'front' }),
+        asset(`${id}_BACK`, s, 1, 1, { orientation: 'back' }),
+        asset(`${id}_SIDE`, s, 1, 1, { orientation: 'side', mirrorSide: true }),
       ],
     }
     fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
