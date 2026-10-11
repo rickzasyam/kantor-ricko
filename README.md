@@ -16,6 +16,7 @@ Model dasar sesuai beban kerja harian (diatur di `karyawan/<id>/kantor-settings.
 ## Isi folder
 
 ```
+CLAUDE.md                   panduan untuk sesi Claude Code yang mengubah repo ini (karyawan melewatinya)
 mulai-kantor.ps1            buka kantor (terminal tersembunyi) + Pixel Office
 tutup-kantor.ps1            semua karyawan pulang
 tampilkan-kantor.ps1        tampilkan / sembunyikan jendela terminal karyawan
@@ -29,6 +30,7 @@ tools/
   jalankan-karyawan.ps1     jalankan satu karyawan (dipanggil mulai-kantor.ps1)
   kantor-umum.ps1           fungsi bersama script kantor
   pasang-shortcut.ps1       autostart Windows + ikon desktop (-Hapus untuk melepas)
+  update-kantor.ps1         ambil perubahan dari GitHub lalu terapkan (ikon Update Kantor)
   interkom-log.mjs          salin pesan interkom ke #ruang-rapat
   rapat.mjs                 mode rapat: karakter peserta berkumpul di Ruang Rapat Pixel Office
 ```
@@ -101,6 +103,7 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Setelah membuat channel `#proyek-...` baru (juga memperbarui daftar chat_id; lalu `-Baru` atau tutup-buka kantor) | | `.\tools\setup-discord.ps1 -SegarkanChannel` |
 | Ganti token satu bot | | `.\tools\setup-discord.ps1 -Hanya kokom` |
 | Lepas autostart & ikon | | `.\tools\pasang-shortcut.ps1 -Hapus` |
+| Terapkan perubahan dari GitHub (setelah PR di-merge) | Update Kantor | `.\tools\update-kantor.ps1` |
 
 ## Tampilan Pixel Office
 
@@ -143,6 +146,17 @@ node tools/rapat.mjs mulai --topik "Kickoff" --peserta pak-asep,kokom,ujang --me
 node tools/rapat.mjs status
 node tools/rapat.mjs selesai
 ```
+
+## Mengubah kantor lewat sesi cloud
+
+Pekerjaan mengubah kode repo ini (script, aturan karyawan, Pixel Office) bisa dikerjakan di **sesi cloud** Claude Code, supaya kuota Pro tetap untuk karyawan. Sesi cloud berjalan di komputer Anthropic dengan salinan repo dari GitHub, membaca `CLAUDE.md` di root repo, lalu mengirim hasilnya sebagai Pull Request.
+
+1. Pastikan Claude GitHub App punya akses ke repo `rickzasyam/kantor-ricko` (github.com/settings/installations → Claude → Repository access).
+2. Buka sesi baru dan pilih **Cloud** (aplikasi desktop), atau buka claude.ai/code. Pilih repo `kantor-ricko`, lalu tulis permintaannya.
+3. Periksa Pull Request-nya di GitHub, lalu klik **Merge**.
+4. Di PC kantor, klik ikon **Update Kantor**: perubahan diambil, Pixel Office dipasang ulang kalau perlu, dan karyawan yang menganggur dibuka ulang supaya memakai aturan baru.
+
+Yang tetap butuh PC ini (sesi lokal atau ikon desktop): menghidupkan/memeriksa karyawan, setup Discord, melihat Pixel Office, dan urusan disk/RAM.
 
 ## Ingatan karyawan
 

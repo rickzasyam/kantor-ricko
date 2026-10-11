@@ -1,0 +1,55 @@
+# Panduan developer Kantor Ricko
+
+File ini untuk sesi Claude Code yang **mengubah kode repo ini** (sesi cloud atau sesi lokal di root repo).
+Karyawan kantor melewati file ini (`claudeMdExcludes` di `karyawan/<id>/kantor-settings.json`); aturan mereka ada di `karyawan/CLAUDE.md`.
+
+## Pemilik
+Pak Ricko, berbahasa Indonesia, masih awam istilah agent/developer. Jelaskan dengan bahasa sederhana (analogi kantor), ringkas, dan selalu bilang apa yang harus ia klik/jalankan.
+
+## Apa ini
+"Kantor virtual" berisi 6 karyawan Claude Code (satu akun Claude **Pro**, tanpa API key) di **satu PC Windows 11**:
+- Tiap karyawan = sesi Claude Code interaktif di tab Windows Terminal yang disembunyikan, `--channels plugin:discord@claude-plugins-official` (satu bot Discord per karyawan), mode izin `auto`, `--continue`.
+- Antar-karyawan bicara lewat **interkom** = cross-session messaging (`SendMessage`), disalin ke Discord `#ruang-rapat` oleh hook `tools/interkom-log.mjs`.
+- File kerja di Google Drive for Desktop, `G:\My Drive\Kantor Ricko\` (bukan di repo). Ingatan karyawan: `autoMemoryDirectory` di Drive.
+- Tampilan: **pixel-agents 1.4.1** (npm, dikunci) + patch di `pixel-office/`, server lokal port 3737.
+- Token bot, `access.json`, webhook: `%USERPROFILE%\.claude\channels\kantor-ricko\`, **di luar repo. Jangan pernah commit rahasia.**
+
+Peta file: lihat bagian "Isi folder" di `README.md`. Daftar karyawan + jabatan: `tools/karyawan.json`.
+
+## Kerja dari sesi cloud
+- Sesi cloud berjalan di Linux dan hanya punya salinan repo. **Tidak bisa** menjalankan/menguji: script PowerShell, Discord, Drive `G:`, Windows Terminal, karyawan yang sedang jalan, Pixel Office live.
+- Yang bisa diuji di cloud:
+  - Pixel Office: `cd pixel-office && npm ci && node patch-pixel-agents.mjs && node bangun.mjs` (patch harus "N patch terpasang", denah harus "Validasi denah: OK"). Jangan commit `node_modules/`.
+  - Script Node: `node --check <file>`; `tools/interkom-log.mjs` bisa dites dengan server HTTP lokal + env `INTERKOM_WEBHOOK_FILE`.
+  - Script PowerShell: minimal periksa sintaks kalau `pwsh` ada (`[System.Management.Automation.Language.Parser]::ParseFile`).
+- Kerjakan di branch, buka PR dengan deskripsi bahasa Indonesia: apa yang berubah, dan **cara menerapkannya**. Biasanya cukup: merge PR, lalu klik ikon **Update Kantor** di desktop (`tools/update-kantor.ps1`: pull, pasang ulang Pixel Office kalau `pixel-office/` berubah, buka ulang karyawan yang menganggur kalau aturan/pengaturan mereka berubah). Sebutkan juga apa yang perlu dicek Pak Ricko secara visual.
+- Hemat: kredit cloud dan kuota Pro terbatas. Jangan menjalankan hal berat yang tidak perlu.
+
+## Aturan teknis (pelajaran yang sudah dibayar mahal)
+**PowerShell 5.1 (semua `.ps1`)**
+- Simpan script **ASCII saja** (PS 5.1 membaca file tanpa BOM sebagai ANSI).
+- Hasil `ConvertFrom-Json`/`Invoke-RestMethod` berupa array perlu `| ForEach-Object { $_ }` supaya tidak menjadi satu objek.
+- Jangan pakai nama parameter `-Debug`/`-Verbose` (bentrok dengan parameter bawaan). Kunci hashtable tidak peka huruf besar-kecil (`Ricko` = `ricko`).
+- Commit dengan pesan berisi tanda kutip: `git commit -F file`, bukan `-m`.
+
+**Karyawan / Claude Code**
+- Sesi yang dibuka dari dalam sesi Claude Code lain mewarisi env `CLAUDE*`/`ANTHROPIC_*` dan menjadi "sesi anak" yang tidak terdaftar di interkom. `tools/jalankan-karyawan.ps1` membuang variabel itu; jangan dihapus.
+- `~/.claude/mcp-needs-auth-cache.json` bersifat global: plugin Discord yang gagal di sesi mana pun membuat semua sesi berikutnya melewatkannya. Plugin Discord dimatikan di `~/.claude/settings.json` dan hanya dinyalakan lewat `enabledPlugins` di `kantor-settings.json`; `mulai-kantor.ps1` menghapus tandanya.
+- Jangan pakai `claude --bg` / `claude agents` (sudah diuji: channel Discord hilang, daemon menyala). Jangan pernah mematikan `WindowsTerminal.exe` (jendela kantor tersembunyi ada di sana).
+- Karyawan sehat = proses `claude.exe` dengan `--name <id>` + `kantor-settings.json`, punya proses `bun.exe` (Discord), dan file `~/.claude/sessions/<pid>.json` (interkom; `status: idle` = aman dibuka ulang).
+- Perubahan `karyawan/**/CLAUDE.md` atau `kantor-settings.json` baru berlaku setelah karyawan dibuka ulang.
+- Model per karyawan diatur di `kantor-settings.json` (`model`, `effortLevel`): Pak Asep haiku, Joko opus, lainnya sonnet. Mode `auto` mendukung Haiku 5.5.
+- Plugin Discord membuang pesan dari bot lain, jadi karyawan tidak bisa saling bicara lewat Discord, hanya lewat interkom.
+
+**Pixel Office (pixel-agents 1.4.1)**
+- `patch-pixel-agents.mjs` menerapkan patch ke salinan asli (`*.asli`) `dist/cli.js` dan `dist/webview/assets/index-*.js`. Tiap titik patch harus muncul tepat 1x; nama variabel hasil minify (`lo`, `Sa`, `E.jsx`, `a.folderName`, ...) hanya berlaku untuk 1.4.1. Naik versi = cari ulang semua titik patch.
+- Nama folder karakter = segmen terakhir nama folder sesi setelah `-` (`pak-asep` -> `asep`, root repo -> `Ricko`). Karakter tetap: `pixel-office/karakter.mjs`; ruangan: `areaMappings` di `~/.pixel-agents/config.json` (dipasang `tools/pasang-pixel-office.ps1`).
+- Kursi = furnitur kategori `chairs`; tile kursi termasuk tile terhalang, jadi harus ada jalan ke sebelahnya. `layout.mjs` mengecek semua kursi terjangkau.
+- Pak Ricko suka mengedit denah lewat editor Layout (`~/.pixel-agents/layout.json`). **Jangan menimpa denahnya (`-TimpaLayout`) tanpa izin**; salin perubahannya ke `layout.mjs` kalau perlu. Furnitur baru tambahkan di akhir daftar `FURNITUR` supaya uid furnitur lama tetap.
+- Mode rapat: `tools/rapat.mjs` menulis `~/.pixel-agents/kantor-rapat.json`; server menyiarkannya, tampilan memindah peserta ke Ruang Rapat.
+
+**PC**
+- RAM 16 GB dan disk C: hampir penuh. Enam sesi + game bisa membuat pagefile memenuhi C: (`ENOSPC`, karyawan mati). Jangan menambah proses berat yang selalu menyala.
+
+## Gaya kode
+Ikuti kode di sekitarnya: komentar dan pesan untuk pengguna dalam bahasa Indonesia, nama variabel Indonesia, komentar menjelaskan *kenapa*. Perbarui `README.md` kalau cara pakai berubah.

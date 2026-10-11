@@ -5,6 +5,7 @@
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Ujang\\memori",
   "crossSessionInbound": "accept",
+  "claudeMdExcludes": ["**/Kantor-Ricko/CLAUDE.md"],
   "env": {
     "DISCORD_STATE_DIR": "C:\\Users\\Ricko Erlangga\\.claude\\channels\\kantor-ricko\\ujang",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "200000",

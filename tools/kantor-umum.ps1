@@ -62,6 +62,14 @@ function Test-TerdaftarInterkom([int]$SessionPid) {
   return Test-Path (Join-Path $env:USERPROFILE ".claude\sessions\$SessionPid.json")
 }
 
+# Apakah sesi sedang menganggur (tidak di tengah tugas), jadi aman dibuka ulang.
+# Claude Code mencatat status sesi ("idle", "busy", ...) di file daftar sesinya.
+function Test-SesiMenganggur([int]$SessionPid) {
+  $f = Join-Path $env:USERPROFILE ".claude\sessions\$SessionPid.json"
+  if (-not (Test-Path $f)) { return $false }
+  try { return ((Get-Content $f -Raw | ConvertFrom-Json).status -eq 'idle') } catch { return $false }
+}
+
 # Claude Code menandai server MCP yang gagal sebagai "perlu login" di file cache global,
 # lalu SEMUA sesi berikutnya melewatkan server itu. Plugin Discord gagal setiap kali
 # dinyalakan tanpa token bot (mis. di sesi Claude Code biasa), jadi tanda itu dihapus

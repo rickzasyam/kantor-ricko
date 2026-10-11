@@ -8,6 +8,7 @@
   - Desktop         : "Buka Kantor"      -> buka kantor + Pixel Office di browser
   - Desktop         : "Tutup Kantor"     -> semua karyawan pulang
   - Desktop         : "Lihat Kantor"     -> tampilkan / sembunyikan jendela terminal karyawan
+  - Desktop         : "Update Kantor"    -> ambil perubahan dari GitHub lalu terapkan
 
 .EXAMPLE
   .\tools\pasang-shortcut.ps1          # pasang semua
@@ -22,6 +23,7 @@ $ps = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 $mulai = Join-Path $root 'mulai-kantor.ps1'
 $tutup = Join-Path $root 'tutup-kantor.ps1'
 $lihat = Join-Path $root 'tampilkan-kantor.ps1'
+$update = Join-Path $root 'tools\update-kantor.ps1'
 
 $shortcuts = @(
   @{ Path = (Join-Path $startup 'Kantor Ricko.lnk'); Target = $ps; Style = 7
@@ -35,7 +37,10 @@ $shortcuts = @(
      Desc = 'Semua karyawan Kantor Ricko pulang' },
   @{ Path = (Join-Path $desktop 'Lihat Kantor.lnk'); Target = $ps; Style = 7
      Args = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$lihat`""
-     Desc = 'Tampilkan / sembunyikan jendela terminal karyawan' }
+     Desc = 'Tampilkan / sembunyikan jendela terminal karyawan' },
+  @{ Path = (Join-Path $desktop 'Update Kantor.lnk'); Target = $ps; Style = 1
+     Args = "-NoProfile -ExecutionPolicy Bypass -Command `"& '$update'; Read-Host 'Tekan Enter untuk menutup'`""
+     Desc = 'Ambil perubahan Kantor Ricko dari GitHub lalu terapkan' }
 )
 # Shortcut lama dari versi sebelumnya
 $usang = @((Join-Path $desktop 'Pantau Karyawan.lnk'))
