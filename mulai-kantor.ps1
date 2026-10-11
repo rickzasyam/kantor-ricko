@@ -113,8 +113,13 @@ if (-not $TanpaPixel) {
   $url = Get-PixelOfficeUrl
   if (-not $url) {
     $log = Join-Path $env:USERPROFILE '.pixel-agents\kantor-pixel.log'
+    Set-AgenPixelKaryawan
+    # pixel-agents lokal (versi dikunci + patch karakter tetap). Belum dipasang? pakai npx.
+    $cli = Join-Path $KantorRoot 'pixel-office\node_modules\pixel-agents\dist\cli.js'
+    $env:KANTOR_KARAKTER = Join-Path $KantorRoot 'pixel-office\karakter.json'
+    $cmd = if (Test-Path $cli) { "node `"$cli`"" } else { 'npx --yes pixel-agents' }
     Start-Process -FilePath 'cmd.exe' -WindowStyle Hidden -WorkingDirectory (Join-Path $KantorRoot 'karyawan') `
-      -ArgumentList "/c npx --yes pixel-agents --port $PixelPort > `"$log`" 2>&1"
+      -ArgumentList "/c $cmd --port $PixelPort > `"$log`" 2>&1"
     for ($i = 0; $i -lt 30 -and -not $url; $i++) { Start-Sleep -Seconds 2; $url = Get-PixelOfficeUrl }
   }
   if ($url) {

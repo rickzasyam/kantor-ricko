@@ -1,0 +1,13 @@
+{
+  "id": "MEETING_TABLE",
+  "name": "Meja Rapat",
+  "category": "desks",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 0,
+  "width": 96,
+  "height": 32,
+  "footprintW": 6,
+  "footprintH": 2
+}

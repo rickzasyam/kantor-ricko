@@ -1,0 +1,13 @@
+{
+  "id": "FRIDGE",
+  "name": "Kulkas",
+  "category": "storage",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 2,
+  "width": 16,
+  "height": 48,
+  "footprintW": 1,
+  "footprintH": 3
+}

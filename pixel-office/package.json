@@ -1,0 +1,10 @@
+{
+  "name": "kantor-ricko-pixel-office",
+  "private": true,
+  "description": "Pixel Office Kantor Ricko: pixel-agents (versi dikunci) + aset & layout kustom",
+  "type": "module",
+  "dependencies": {
+    "pixel-agents": "1.4.1",
+    "pngjs": "7.0.0"
+  }
+}

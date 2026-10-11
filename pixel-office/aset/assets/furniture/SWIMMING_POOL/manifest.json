@@ -1,0 +1,13 @@
+{
+  "id": "SWIMMING_POOL",
+  "name": "Kolam Renang",
+  "category": "misc",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 0,
+  "width": 160,
+  "height": 80,
+  "footprintW": 10,
+  "footprintH": 5
+}

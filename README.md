@@ -30,6 +30,16 @@ tools/
   interkom-log.mjs          salin pesan interkom ke #ruang-rapat
 ```
 
+```
+pixel-office/
+  bangun.mjs                bangun furnitur, karakter, denah (node bangun.mjs)
+  furnitur.mjs              23 furnitur kustom digambar piksel per piksel
+  karakter.mjs              karakter tetap per karyawan + 2 karakter kustom (Ayu, Ricko)
+  layout.mjs                denah kantor 46x34 (8 ruangan)
+  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan)
+  aset/                     hasil bangun: folder aset tambahan untuk pixel-agents
+```
+
 Token bot, daftar akses, dan URL webhook disimpan di `%USERPROFILE%\.claude\channels\kantor-ricko\` — **di luar** folder ini, jadi tidak ikut ke GitHub.
 
 ## Setup pertama kali
@@ -88,6 +98,27 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Setelah membuat channel `#proyek-...` baru (juga memperbarui daftar chat_id; lalu `-Baru` atau tutup-buka kantor) | | `.\tools\setup-discord.ps1 -SegarkanChannel` |
 | Ganti token satu bot | | `.\tools\setup-discord.ps1 -Hanya kokom` |
 | Lepas autostart & ikon | | `.\tools\pasang-shortcut.ps1 -Hapus` |
+
+## Tampilan Pixel Office
+
+![Kantor Ricko](pixel-office/pratinjau-kantor.jpg)
+
+| Ruangan | Isi | Yang duduk |
+|---|---|---|
+| Ruang Ricko | meja eksekutif, kursi kulit, akuarium, sofa | Ricko |
+| Ruang Manajer | meja eksekutif, whiteboard, rak buku, sofa | Pak Asep |
+| Ruang Rapat | meja rapat walnut 14 kursi, TV presentasi | - |
+| Pantry | kitchen set, mesin kopi, kulkas, dispenser, meja makan | - |
+| Ruang Kerja | 6 meja putih + PC modern (layar menyala saat bekerja) | Kokom, Ujang, Joko, Neneng, Ayu |
+| Lounge | sofa, tanaman | - |
+| Ruang Game | TV + PS5, kursi gaming, 2 mesin arcade, meja biliar, neon, bean bag | - |
+| Kolam Renang | kolam, kursi berjemur, payung, pohon kelapa, taman | - |
+
+Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep jas biru, Kokom rambut ikal oranye, Joko afro, Ujang rambut jabrik, Neneng rambut bob, Ayu rambut panjang + gaun pink, Ricko jas hitam.
+
+- Pasang / perbarui tampilan: `.\tools\pasang-pixel-office.ps1 -MulaiUlang`
+- Kembalikan denah ke desain ini setelah diedit di editor Layout: `.\tools\pasang-pixel-office.ps1 -TimpaLayout -MulaiUlang`
+- Ubah desain: edit `pixel-office/furnitur.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
 
 ## Ingatan karyawan
 
