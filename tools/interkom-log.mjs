@@ -8,7 +8,7 @@
 // URL webhook dibaca dari %USERPROFILE%\.claude\channels\kantor-ricko\ruang-rapat-webhook.txt
 // (diisi oleh tools/setup-discord.ps1). Kalau file itu belum ada, script diam saja.
 
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 
@@ -21,6 +21,35 @@ const NAMA = {
   ayu: 'Ayu',
 }
 const DISCORD_LIMIT = 2000
+const KANTOR = join(homedir(), '.claude', 'channels', 'kantor-ricko')
+
+// Karyawan kadang membalas ke alamat internal pengirim ("uds:\\.\pipe\LOCAL\cc-msg-<kode>")
+// alih-alih namanya. Terjemahkan kode itu ke nama: dari daftar sesi yang sedang jalan
+// (~/.claude/sessions/*.json), dengan cadangan alamat lama di interkom-alamat.json
+// supaya sesi yang sudah mati tetap terbaca namanya.
+const kodeAlamat = s => String(s).match(/cc-msg-[0-9a-f]+/i)?.[0]?.toLowerCase()
+
+function namaDariAlamat(to) {
+  const kode = kodeAlamat(to)
+  if (!kode) return undefined
+  const cacheFile = join(KANTOR, 'interkom-alamat.json')
+  let cache = {}
+  try { cache = JSON.parse(readFileSync(cacheFile, 'utf8')) } catch {}
+  let berubah = false
+  try {
+    const dir = join(homedir(), '.claude', 'sessions')
+    for (const f of readdirSync(dir)) {
+      if (!f.endsWith('.json')) continue
+      try {
+        const s = JSON.parse(readFileSync(join(dir, f), 'utf8'))
+        const k = kodeAlamat(s.messagingSocketPath ?? '')
+        if (k && s.name && cache[k] !== s.name) { cache[k] = s.name; berubah = true }
+      } catch {}
+    }
+  } catch {}
+  if (berubah) { try { writeFileSync(cacheFile, JSON.stringify(cache, null, 2)) } catch {} }
+  return cache[kode]
+}
 
 async function main() {
   const sender = process.argv[2] ?? 'Karyawan'
@@ -36,17 +65,25 @@ async function main() {
   const { to = '', message = '' } = input.tool_input ?? {}
   if (!message.trim()) return // langganan notify_when_idle tanpa pesan
 
-  const bareTo = to.replace(/\s*\[.*\]$/, '')
-  const target = NAMA[bareTo] ?? bareTo
-
-  // Pesan ke karyawan yang sesinya belum dinyalakan gagal terkirim ({success: false}).
-  // Catat sebagai gagal, tanpa isi, supaya tidak terlihat seolah-olah sampai.
   let response = input.tool_response
   if (typeof response === 'string') {
     try { response = JSON.parse(response) } catch {}
   }
+
+  // Nama penerima: dari nama interkom, atau terjemahan alamat internal, atau dari
+  // laporan pengiriman ("... → pak-asep (another Claude session ...").
+  let bareTo = to.replace(/\s*\[.*\]$/, '')
+  if (/^uds:|cc-msg-/i.test(bareTo)) {
+    bareTo = namaDariAlamat(bareTo)
+      ?? String(response?.message ?? '').match(/→ ([\w-]+) \(/)?.[1]
+      ?? 'rekan'
+  }
+  const target = NAMA[bareTo] ?? bareTo
+
+  // Pesan ke karyawan yang sesinya tidak berjalan gagal terkirim ({success: false}).
+  // Catat sebagai gagal, tanpa isi, supaya tidak terlihat seolah-olah sampai.
   let text = response?.success === false
-    ? `📵 **${sender} → ${target}** — tidak terkirim (${target} belum aktif)`
+    ? `📵 **${sender} → ${target}** — tidak terkirim (sesi ${target === 'rekan' ? 'penerima' : target} sedang tidak berjalan)`
     : `📞 **${sender} → ${target}**\n${message}`
 
   const chunks = []
