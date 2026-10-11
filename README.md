@@ -2,14 +2,16 @@
 
 Enam karyawan AI (Claude Code) yang bekerja lewat Discord, saling berdiskusi lewat interkom, dan tampil sebagai karakter pixel di [pixel-agents](https://github.com/pixel-agents-hq/pixel-agents).
 
-| Karyawan | Role | Nama interkom | Model dasar |
-|---|---|---|---|
-| Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 |
-| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 |
-| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet 5.5 |
-| Joko | Full-stack Developer | `joko` | Opus 5.5 |
-| Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 |
-| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 |
+| Karyawan | Role | Nama interkom | Model dasar | Asal |
+|---|---|---|---|---|
+| Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 | Sunda (Bandung) |
+| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 | Sunda (Garut) |
+| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet 5.5 | Sunda (Sukabumi) |
+| Joko | Full-stack Developer | `joko` | Opus 5.5 | Jawa (Solo) |
+| Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 | Jawa (Semarang) |
+| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 | Bali (Denpasar) |
+
+Tiap karyawan punya kepribadian dan logat daerah ringan (bagian "Siapa kamu" di `karyawan/<id>/CLAUDE.md`), dan ngobrol santai seperti rekan kantor, bukan seperti asisten AI (bagian "Ngobrol seperti orang kantor" di `karyawan/CLAUDE.md`). Dokumen untuk client tetap formal.
 
 Model dasar sesuai beban kerja harian (diatur di `karyawan/<id>/kantor-settings.json`, kolom `model` dan `effortLevel`). Tugas yang lebih berat dikerjakan lewat subagent Opus; aturannya di bagian "Model & tugas berat" di `karyawan/CLAUDE.md`. Setelah mengubah model, buka ulang karyawan (`.	utup-kantor.ps1` lalu `.mulai-kantor.ps1`).
 
@@ -154,6 +156,7 @@ Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep ja
 - Ubah desain: edit `pixel-office/furnitur.mjs` / `furnitur-genz.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
 - Setelah mengedit denah lewat editor Layout, `pasang-pixel-office.ps1` memperingatkan kalau ada kursi yang jalannya tertutup furnitur (karakter tidak akan bisa ke sana).
 - Karyawan yang duduk di luar ruangannya otomatis dipindah kembali ke ruangannya.
+- Hanya karyawan di `tools/karyawan.json` dan Pak Ricko yang tampil. Sesi Claude Code lain di PC (folder di luar kantor) tidak dimunculkan sebagai karakter.
 
 ## Rapat & kerja bareng
 
