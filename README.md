@@ -28,6 +28,7 @@ karyawan/
   <id>/kantor-settings.json model, ingatan, compact, hook interkom
 tools/
   karyawan.json             daftar karyawan + channel Discord yang didengar
+  atasan.json               selain Pak Ricko, siapa yang boleh memerintah lewat Discord (Bu Ghina)
   setup-discord.ps1         sambungkan token bot & channel
   jalankan-karyawan.ps1     jalankan satu karyawan (dipanggil mulai-kantor.ps1)
   kantor-umum.ps1           fungsi bersama script kantor
@@ -96,6 +97,8 @@ Balasan Pak Asep muncul di `#lobby`, obrolan interkomnya muncul di `#ruang-rapat
 
 Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di layar, tidak di taskbar). Izin yang perlu persetujuan dikirim ke DM Discord Anda.
 
+Yang boleh mengobrol dan memberi perintah lewat Discord: Pak Ricko dan orang di `tools/atasan.json` (sekarang **Bu Ghina**). Daftar ini disalin ke `access.json` tiap bot setiap kantor dibuka. Orang di daftar itu juga bisa menyetujui izin karyawan dari Discord, jadi isi hanya dengan orang yang dipercaya. Aksi yang tidak bisa dibatalkan (kirim ke klien, hapus, bayar, publish) tetap menunggu oke Pak Ricko.
+
 | Kebutuhan | Ikon desktop | Perintah |
 |---|---|---|
 | Buka kantor (otomatis saat login) | Buka Kantor | `.\mulai-kantor.ps1` |
@@ -108,6 +111,7 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Ganti token satu bot | | `.\tools\setup-discord.ps1 -Hanya kokom` |
 | Lepas autostart & ikon | | `.\tools\pasang-shortcut.ps1 -Hapus` |
 | Terapkan perubahan dari GitHub (setelah PR di-merge) | Update Kantor | `.\tools\update-kantor.ps1` |
+| Tambah/hapus orang yang boleh memerintah karyawan di Discord (mis. Bu Ghina) | Update Kantor | edit `tools/atasan.json` (nama + Discord user ID), lalu Update Kantor |
 
 ## Tampilan Pixel Office
 

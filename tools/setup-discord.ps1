@@ -7,8 +7,8 @@
     %USERPROFILE%\.claude\channels\kantor-ricko\<id>\.env
     Lokasi ini di luar folder proyek, jadi token tidak ikut ter-upload ke GitHub.
   - Membaca daftar channel di server Discord, lalu menulis access.json tiap bot:
-    hanya Pak Ricko yang boleh memerintah, dan channel mana yang didengar bot itu
-    (lihat kolom "channel" di tools\karyawan.json).
+    hanya Pak Ricko + orang di tools\atasan.json yang boleh memerintah, dan channel mana
+    yang didengar bot itu (lihat kolom "channel" di tools\karyawan.json).
   - Menyimpan URL webhook #ruang-rapat untuk log interkom.
 
 .EXAMPLE
@@ -132,6 +132,15 @@ if (-not $config.guildId -or -not ($guilds.id -contains $config.guildId)) {
   }
 }
 
+# Yang boleh memerintah: Pak Ricko + tools\atasan.json (mis. Bu Ghina).
+$pemberiPerintah = @($config.ownerId)
+$atasanFile = Join-Path $root 'tools\atasan.json'
+if (Test-Path $atasanFile) {
+  $pemberiPerintah += @([IO.File]::ReadAllText($atasanFile) | ConvertFrom-Json | ForEach-Object { $_ } |
+    Where-Object { $_.discordId } | ForEach-Object { ([string]$_.discordId).Trim() })
+}
+$pemberiPerintah = @($pemberiPerintah | Where-Object { $_ } | Select-Object -Unique)
+
 # 0 = text, 5 = announcement, 15 = forum
 $channels = @(Invoke-Discord $anyToken "/guilds/$($config.guildId)/channels") | Where-Object { @(0, 5, 15) -contains $_.type }
 $eyes = [char]::ConvertFromUtf32(0x1F440)
@@ -143,12 +152,12 @@ foreach ($k in $karyawan) {
   $groups = [ordered]@{}
   foreach ($ch in $channels) {
     if (Test-ChannelMatch $ch.name $k.channel) {
-      $groups[$ch.id] = [ordered]@{ requireMention = $true; allowFrom = @($config.ownerId) }
+      $groups[$ch.id] = [ordered]@{ requireMention = $true; allowFrom = $pemberiPerintah }
     }
   }
   $access = [ordered]@{
     dmPolicy    = 'allowlist'
-    allowFrom   = @($config.ownerId)
+    allowFrom   = $pemberiPerintah
     groups      = $groups
     pending     = @{}
     ackReaction = $eyes

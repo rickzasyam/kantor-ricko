@@ -47,7 +47,7 @@ git log --oneline "$lama..$baru"
 $berubah = @(git diff --name-only $lama $baru)
 
 # --- Karyawan: buka ulang yang menganggur supaya membaca aturan / pengaturan baru ---
-$aturanKaryawan = $berubah | Where-Object { $_ -match '^karyawan/|^tools/(jalankan-karyawan|kantor-umum|interkom-log)|^mulai-kantor\.ps1$' }
+$aturanKaryawan = $berubah | Where-Object { $_ -match '^karyawan/|^tools/(jalankan-karyawan|kantor-umum|interkom-log)|^tools/atasan\.json$|^mulai-kantor\.ps1$' }
 $perluPixel = $berubah | Where-Object { $_ -match '^pixel-office/|^tools/karyawan\.json$|^tools/pasang-pixel-office\.ps1$' }
 if ($aturanKaryawan) {
   Write-Host ''
