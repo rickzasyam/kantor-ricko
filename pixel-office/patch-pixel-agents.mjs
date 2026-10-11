@@ -22,6 +22,7 @@
 //    neon, ...) beranimasi terus, tidak hanya saat ada karyawan yang bekerja di depannya.
 // 7. Aktivitas karyawan saat menganggur (aktivitas.js): bikin kopi lalu minum di meja, berenang,
 //    PS5, biliar, arcade, foosball, treadmill, dumbbell, samsak, rebahan di bean bag.
+// 8. Satpam: sesi Claude Code di luar kantor (folder lain di PC) tidak ditampilkan.
 //
 // Jalankan ulang setelah `npm install`.
 import fs from 'node:fs'
@@ -220,6 +221,16 @@ const AKTIVITAS_GAMBAR = {
   ganti: 'p=e.isHeadless&&ra?xe:1;if(__kantorGambar(l,e,a,r,i))continue;if(e.matrixEffect)',
 }
 
+// Satpam kantor: "Watch All Sessions" menampilkan SEMUA sesi Claude Code di PC, termasuk sesi
+// di folder lain (mis. label "intelligence"). Hanya karyawan di tools/karyawan.json + PROFIL_LAIN
+// (Pak Ricko) yang dibuat karakternya. `a` = nama folder sesi.
+const SATPAM = {
+  nama: 'hanya karyawan kantor yang tampil',
+  cari: 'addAgent(e,t,n,r,i,a,o){if(this.characters.has(e))return;',
+  ganti: 'addAgent(e,t,n,r,i,a,o){if(this.characters.has(e))return;' +
+    'if(a&&window.__kantorProfil&&!window.__kantorProfil[String(a).toLowerCase()])return;',
+}
+
 // Frame ke-2 dst. tidak ditampilkan sebagai furnitur terpisah di palet editor Layout.
 const AMBIEN_PALET = {
   nama: 'sembunyikan frame animasi dari palet',
@@ -236,7 +247,7 @@ function bundelTampilan() {
 
 const TARGET = [
   { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM] },
 ]
 
 const versi = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8')).version

@@ -2,14 +2,16 @@
 
 Enam karyawan AI (Claude Code) yang bekerja lewat Discord, saling berdiskusi lewat interkom, dan tampil sebagai karakter pixel di [pixel-agents](https://github.com/pixel-agents-hq/pixel-agents).
 
-| Karyawan | Role | Nama interkom | Model dasar |
-|---|---|---|---|
-| Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 |
-| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 |
-| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet 5.5 |
-| Joko | Full-stack Developer | `joko` | Opus 5.5 |
-| Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 |
-| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 |
+| Karyawan | Role | Nama interkom | Model dasar | Asal |
+|---|---|---|---|---|
+| Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 | Sunda (Bandung) |
+| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 | Sunda (Garut) |
+| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet 5.5 | Sunda (Sukabumi) |
+| Joko | Full-stack Developer | `joko` | Opus 5.5 | Jawa (Solo) |
+| Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 | Jawa (Semarang) |
+| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 | Bali (Denpasar) |
+
+Tiap karyawan punya kepribadian dan logat daerah ringan (bagian "Siapa kamu" di `karyawan/<id>/CLAUDE.md`), dan ngobrol santai seperti rekan kantor, bukan seperti asisten AI (bagian "Ngobrol seperti orang kantor" di `karyawan/CLAUDE.md`). Dokumen untuk client tetap formal.
 
 Model dasar sesuai beban kerja harian (diatur di `karyawan/<id>/kantor-settings.json`, kolom `model` dan `effortLevel`). Tugas yang lebih berat dikerjakan lewat subagent Opus; aturannya di bagian "Model & tugas berat" di `karyawan/CLAUDE.md`. Setelah mengubah model, buka ulang karyawan (`.	utup-kantor.ps1` lalu `.mulai-kantor.ps1`).
 
@@ -26,6 +28,7 @@ karyawan/
   <id>/kantor-settings.json model, ingatan, compact, hook interkom
 tools/
   karyawan.json             daftar karyawan + channel Discord yang didengar
+  atasan.json               selain Pak Ricko, siapa yang boleh memerintah lewat Discord (Bu Ghina)
   setup-discord.ps1         sambungkan token bot & channel
   jalankan-karyawan.ps1     jalankan satu karyawan (dipanggil mulai-kantor.ps1)
   kantor-umum.ps1           fungsi bersama script kantor
@@ -94,6 +97,8 @@ Balasan Pak Asep muncul di `#lobby`, obrolan interkomnya muncul di `#ruang-rapat
 
 Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di layar, tidak di taskbar). Izin yang perlu persetujuan dikirim ke DM Discord Anda.
 
+Yang boleh mengobrol dan memberi perintah lewat Discord: Pak Ricko dan orang di `tools/atasan.json` (sekarang **Bu Ghina**). Daftar ini disalin ke `access.json` tiap bot setiap kantor dibuka. Orang di daftar itu juga bisa menyetujui izin karyawan dari Discord, jadi isi hanya dengan orang yang dipercaya. Aksi yang tidak bisa dibatalkan (kirim ke klien, hapus, bayar, publish) tetap menunggu oke Pak Ricko.
+
 | Kebutuhan | Ikon desktop | Perintah |
 |---|---|---|
 | Buka kantor (otomatis saat login) | Buka Kantor | `.\mulai-kantor.ps1` |
@@ -106,6 +111,7 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 | Ganti token satu bot | | `.\tools\setup-discord.ps1 -Hanya kokom` |
 | Lepas autostart & ikon | | `.\tools\pasang-shortcut.ps1 -Hapus` |
 | Terapkan perubahan dari GitHub (setelah PR di-merge) | Update Kantor | `.\tools\update-kantor.ps1` |
+| Tambah/hapus orang yang boleh memerintah karyawan di Discord (mis. Bu Ghina) | Update Kantor | edit `tools/atasan.json` (nama + Discord user ID), lalu Update Kantor |
 
 ## Tampilan Pixel Office
 
@@ -154,6 +160,7 @@ Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep ja
 - Ubah desain: edit `pixel-office/furnitur.mjs` / `furnitur-genz.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
 - Setelah mengedit denah lewat editor Layout, `pasang-pixel-office.ps1` memperingatkan kalau ada kursi yang jalannya tertutup furnitur (karakter tidak akan bisa ke sana).
 - Karyawan yang duduk di luar ruangannya otomatis dipindah kembali ke ruangannya.
+- Hanya karyawan di `tools/karyawan.json` dan Pak Ricko yang tampil. Sesi Claude Code lain di PC (folder di luar kantor) tidak dimunculkan sebagai karakter.
 
 ## Rapat & kerja bareng
 

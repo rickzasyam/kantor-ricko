@@ -87,6 +87,50 @@ function Clear-TandaDiscordGagal {
   Write-Host '  (tanda "Discord gagal" dari sesi lain dibersihkan)'
 }
 
+# Siapa saja yang boleh memerintah karyawan lewat Discord: Pak Ricko (ownerId di config.json,
+# diisi setup-discord.ps1) ditambah orang di tools\atasan.json (mis. Bu Ghina).
+function Get-IdPemberiPerintah {
+  $ids = @()
+  $cfgFile = Join-Path $env:USERPROFILE '.claude\channels\kantor-ricko\config.json'
+  if (Test-Path $cfgFile) {
+    $cfg = [IO.File]::ReadAllText($cfgFile) | ConvertFrom-Json
+    if ($cfg.ownerId) { $ids += [string]$cfg.ownerId }
+  }
+  # Tanpa ID Pak Ricko jangan ubah apa pun, supaya pemilik tidak terkunci dari botnya sendiri.
+  if ($ids.Count -eq 0) { return @() }
+  $atasanFile = Join-Path $KantorRoot 'tools\atasan.json'
+  if (Test-Path $atasanFile) {
+    $ids += @([IO.File]::ReadAllText($atasanFile) | ConvertFrom-Json | ForEach-Object { $_ } |
+      Where-Object { $_.discordId } | ForEach-Object { ([string]$_.discordId).Trim() })
+  }
+  return @($ids | Where-Object { $_ } | Select-Object -Unique)
+}
+
+# Samakan daftar allowFrom di access.json tiap bot dengan Get-IdPemberiPerintah, supaya
+# menambah atasan cukup lewat tools\atasan.json + Update Kantor (tanpa setup-discord ulang).
+# Plugin Discord membaca access.json saat pesan masuk, jadi berlaku tanpa membuka ulang karyawan.
+function Sync-AksesDiscord {
+  $ids = @(Get-IdPemberiPerintah)
+  if ($ids.Count -eq 0) { return }   # Discord belum di-setup
+  $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+  foreach ($k in (Get-Karyawan)) {
+    $file = Join-Path $env:USERPROFILE ".claude\channels\kantor-ricko\$($k.id)\access.json"
+    if (-not (Test-Path $file)) { continue }
+    # ReadAllText (bukan Get-Content) supaya emoji ackReaction tidak rusak di PowerShell 5.1.
+    $text = [IO.File]::ReadAllText($file)
+    try { $akses = $text | ConvertFrom-Json } catch { Write-Warning "access.json $($k.nama) rusak, dilewati."; continue }
+    $sebelum = $akses | ConvertTo-Json -Depth 6
+    $akses | Add-Member -Force -NotePropertyName allowFrom -NotePropertyValue $ids
+    if ($akses.groups) {
+      foreach ($g in $akses.groups.PSObject.Properties) { $g.Value | Add-Member -Force -NotePropertyName allowFrom -NotePropertyValue $ids }
+    }
+    $sesudah = $akses | ConvertTo-Json -Depth 6
+    if ($sesudah -eq $sebelum) { continue }
+    [IO.File]::WriteAllText($file, $sesudah, $utf8NoBom)
+    Write-Host "  $($k.nama): daftar pemberi perintah Discord diperbarui ($($ids.Count) orang)"
+  }
+}
+
 # Proses Claude Code milik karyawan $Id yang sedang jalan di terminal. Dicari dari baris
 # perintahnya, karena sesi terminal tidak selalu muncul di `claude agents --json`.
 function Get-ProsesKaryawan([string]$Id) {
