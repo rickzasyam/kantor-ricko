@@ -7,8 +7,8 @@
   - npm install di pixel-office\ (pixel-agents dikunci di versi 1.4.1) + patch karakter
   - node bangun.mjs: furnitur, karakter kustom, denah, karakter.json
   - ~/.pixel-agents/config.json: folder aset kustom + areaMappings (siapa duduk di ruang mana)
-  - ~/.pixel-agents/layout.json: dipasang kalau belum ada, atau kalau -TimpaLayout.
-    Layout lama selalu di-backup dulu.
+  - ~/.pixel-agents/layout.json: dipasang kalau belum ada, kalau -TimpaLayout, atau sekali
+    saat versi desain denah di repo naik. Layout lama selalu di-backup dulu.
   - -MulaiUlang: matikan Pixel Office yang sedang jalan lalu buka lagi dengan versi baru.
 
 .EXAMPLE
@@ -63,13 +63,23 @@ Write-Host 'Konfigurasi pixel-agents diperbarui (folder aset + pembagian ruangan
 
 # --- 3. Denah ------------------------------------------------------------------------
 $layoutFile = Join-Path $pa 'layout.json'
-if (-not (Test-Path $layoutFile) -or $TimpaLayout) {
+# Versi desain denah (layoutRevision di layout-kantor.json, dari VERSI_DENAH di layout.mjs).
+# Kalau desain di repo lebih baru dari yang terakhir dipasang, denah dipasang ulang sekali
+# (denah lama tetap di-backup). Setelah itu suntingan lewat editor Layout dipertahankan lagi.
+$versiFile = Join-Path $pa 'kantor-versi-denah.txt'
+$versiRepo = [int](Get-Content (Join-Path $po 'layout-kantor.json') -Raw | ConvertFrom-Json).layoutRevision
+$versiPasang = 0
+if (Test-Path $versiFile) { $versiPasang = [int]((Get-Content $versiFile -Raw).Trim()) }
+$desainBaru = $versiRepo -gt $versiPasang
+if ($desainBaru -and (Test-Path $layoutFile)) { Write-Host "Desain kantor baru (versi $versiRepo). Denah dipasang ulang." -ForegroundColor Cyan }
+if (-not (Test-Path $layoutFile) -or $TimpaLayout -or $desainBaru) {
   if (Test-Path $layoutFile) {
     $bak = "$layoutFile.bak-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
     Copy-Item $layoutFile $bak
     Write-Host "Denah lama disimpan: $bak"
   }
   Copy-Item (Join-Path $po 'layout-kantor.json') $layoutFile -Force
+  [IO.File]::WriteAllText($versiFile, "$versiRepo", $utf8NoBom)
   Write-Host 'Denah Kantor Ricko dipasang.'
 } else {
   Write-Host 'Denah yang ada dipertahankan (pakai -TimpaLayout untuk mengganti dengan desain ini).'

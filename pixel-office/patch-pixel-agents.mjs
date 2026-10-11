@@ -20,6 +20,8 @@
 //    di bawahnya ("Manager"). Data dari tools/karyawan.json (nama, jabatan) + PROFIL_LAIN.
 // 6. Animasi ambien: furnitur dengan grup animasi di luar state on/off (kolam renang, akuarium,
 //    neon, ...) beranimasi terus, tidak hanya saat ada karyawan yang bekerja di depannya.
+// 7. Aktivitas karyawan saat menganggur (aktivitas.js): bikin kopi lalu minum di meja, berenang,
+//    PS5, biliar, arcade, foosball, treadmill, dumbbell, samsak, rebahan di bean bag.
 //
 // Jalankan ulang setelah `npm install`.
 import fs from 'node:fs'
@@ -181,9 +183,10 @@ const LABEL_NAMA = {
 // `gn` = peta grup animasi -> id frame, `Un` = pembuat instance furnitur dari daftar layout.
 const DETIK_PER_FRAME = 0.35
 const AMBIEN_FUNGSI = {
-  nama: 'animasi ambien (fungsi)',
+  nama: 'animasi ambien + aktivitas karyawan (fungsi)',
   cari: 'var oo=class{layout;',
   ganti:
+    fs.readFileSync(path.join(HERE, 'aktivitas.js'), 'utf8') + '\n' +
     'function __kantorAmbien(list,timer){var peta=new Map();' +
     'gn.forEach(function(ids,grup){if(/_$/.test(grup)&&ids.length>1)ids.forEach(function(id){peta.set(id,ids)})});' +
     'if(!peta.size)return list;' +
@@ -203,6 +206,20 @@ const AMBIEN_AKTIF = {
   cari: 'return n});this.furniture=Un(n)}',
   ganti: 'return n});this.furniture=Un(__kantorAmbien(n,this.furnitureAnimTimer))}',
 }
+// Aktivitas karyawan saat menganggur (lihat aktivitas.js): dijalankan sebelum logika bawaan
+// karakter (`zi`) di OfficeState.update, dan menggambar pose + properti di renderer (`ua`:
+// `l` = daftar gambar, `a` = zoom, `r`/`i` = geser kanvas).
+const AKTIVITAS_GERAK = {
+  nama: 'aktivitas karyawan (gerak)',
+  cari: 'this.withOwnSeatUnblocked(t,()=>zi(t,e,this.walkableTiles,this.seats,this.tileMap,this.blockedTiles))',
+  ganti: '(__kantorAktivitas(this,t,e)||this.withOwnSeatUnblocked(t,()=>zi(t,e,this.walkableTiles,this.seats,this.tileMap,this.blockedTiles)))',
+}
+const AKTIVITAS_GAMBAR = {
+  nama: 'aktivitas karyawan (gambar)',
+  cari: 'p=e.isHeadless&&ra?xe:1;if(e.matrixEffect)',
+  ganti: 'p=e.isHeadless&&ra?xe:1;if(__kantorGambar(l,e,a,r,i))continue;if(e.matrixEffect)',
+}
+
 // Frame ke-2 dst. tidak ditampilkan sebagai furnitur terpisah di palet editor Layout.
 const AMBIEN_PALET = {
   nama: 'sembunyikan frame animasi dari palet',
@@ -219,7 +236,7 @@ function bundelTampilan() {
 
 const TARGET = [
   { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR] },
 ]
 
 const versi = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8')).version

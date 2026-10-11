@@ -46,6 +46,8 @@ Peta file: lihat bagian "Isi folder" di `README.md`. Daftar karyawan + jabatan: 
 - Nama folder karakter = segmen terakhir nama folder sesi setelah `-` (`pak-asep` -> `asep`, root repo -> `Ricko`). Karakter tetap: `pixel-office/karakter.mjs`; ruangan: `areaMappings` di `~/.pixel-agents/config.json` (dipasang `tools/pasang-pixel-office.ps1`).
 - Kursi = furnitur kategori `chairs`; tile kursi termasuk tile terhalang, jadi harus ada jalan ke sebelahnya. `layout.mjs` mengecek semua kursi terjangkau.
 - Pak Ricko suka mengedit denah lewat editor Layout (`~/.pixel-agents/layout.json`). **Jangan menimpa denahnya (`-TimpaLayout`) tanpa izin**; salin perubahannya ke `layout.mjs` kalau perlu. Furnitur baru tambahkan di akhir daftar `FURNITUR` supaya uid furnitur lama tetap.
+- Denah baru yang harus menggantikan denah Pak Ricko: naikkan `VERSI_DENAH` di `layout.mjs` (dipasang sekali oleh `pasang-pixel-office.ps1`, denah lama di-backup). Hanya kalau ia memintanya.
+- Aktivitas karyawan saat menganggur: `pixel-office/aktivitas.js` (kode biasa, disuntikkan patch). Memakai nama minify 1.4.1 (`R`, `z`, `Ai`, `Oi`, `Ii`, `Vi`, `_i`, `ni`, `xn`). Uji di browser dengan karyawan tiruan: `window.__kantorOffice.current.addAgent(...)`, bobot aktivitas lewat `window.__kantorJenisAktivitas`.
 - Mode rapat: `tools/rapat.mjs` menulis `~/.pixel-agents/kantor-rapat.json`; server menyiarkannya, tampilan memindah peserta ke Ruang Rapat.
 
 **PC**

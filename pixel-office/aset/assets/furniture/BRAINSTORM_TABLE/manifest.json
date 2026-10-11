@@ -1,0 +1,13 @@
+{
+  "id": "BRAINSTORM_TABLE",
+  "name": "Meja Brainstorm",
+  "category": "desks",
+  "type": "asset",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 0,
+  "width": 96,
+  "height": 32,
+  "footprintW": 6,
+  "footprintH": 2
+}

@@ -38,10 +38,12 @@ tools/
 ```
 pixel-office/
   bangun.mjs                bangun furnitur, karakter, denah (node bangun.mjs)
-  furnitur.mjs              23 furnitur kustom digambar piksel per piksel
+  furnitur.mjs              furnitur kustom digambar piksel per piksel
+  furnitur-genz.mjs         furnitur gaya gen-Z: kursi pop, neon tulisan, kafe, gym, foosball, poster
   karakter.mjs              karakter tetap per karyawan + 2 karakter kustom (Ayu, Ricko)
-  layout.mjs                denah kantor 46x34 (8 ruangan) + cek semua kursi bisa didatangi
-  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien)
+  layout.mjs                denah kantor 50x36 (9 ruangan) + cek semua kursi bisa didatangi
+  aktivitas.js              aktivitas karyawan saat menganggur (disuntikkan ke pixel-agents)
+  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien, aktivitas)
   aset/                     hasil bangun: folder aset tambahan untuk pixel-agents
 ```
 
@@ -109,18 +111,35 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 
 ![Kantor Ricko](pixel-office/pratinjau-kantor.jpg)
 
+Gaya kantor gen-Z (ala kantor Google / Roblox): lantai dan dinding pastel per ruangan, neon tulisan, kursi pop warna-warni, banyak tempat main.
+
 | Ruangan | Isi | Yang duduk |
 |---|---|---|
-| Ruang Ricko | meja eksekutif, kursi kulit, akuarium, sofa | Ricko |
-| Ruang Manajer | meja eksekutif, whiteboard, rak buku, sofa | Pak Asep |
-| Ruang Rapat | meja rapat walnut 14 kursi, TV presentasi | - |
-| Pantry | kitchen set, mesin kopi, kulkas, dispenser, meja makan | - |
-| Ruang Kerja | 6 meja putih + PC modern (layar menyala saat bekerja) | Kokom, Ujang, Joko, Neneng, Ayu |
-| Lounge | set sofa + meja kopi (susunan Pak Ricko), tanaman | - |
-| Ruang Game | TV + PS5, kursi gaming, 2 mesin arcade, meja biliar, neon, bean bag | - |
-| Kolam Renang | kolam, kursi berjemur, payung, pohon kelapa, taman | - |
+| Ruang Ricko | neon RICKO, meja oak + lampu LED, akuarium, sofa, bean bag | Ricko |
+| Ruang Manajer | papan kanban sticky note, meja oak, rak buku, bean bag | Pak Asep |
+| Ruang Rapat | meja brainstorm putih, 14 kursi pop warna-warni, karpet kuning, neon IDE, TV, dinding sticky note | - |
+| Kafe | coffee bar + mesin espresso + etalase kue, kursi bar, meja nongkrong, neon KOPI, papan menu | - |
+| Ruang Kerja | 6 meja putih + PC modern (layar menyala saat bekerja), kursi lilac, neon VIBES | Kokom, Ujang, Joko, Neneng, Ayu |
+| Lounge | sofa, kursi telur gantung yang berayun, bean bag | - |
+| Ruang Game | TV + PS5, kursi gaming, 3 mesin arcade, biliar, foosball, sofa, bean bag | - |
+| Gym | 4 treadmill, rak dumbbell, bench barbel, samsak, matras yoga, cermin, neon GYM | - |
+| Kolam Renang | kolam beranimasi, kursi berjemur, payung, pohon kelapa, taman, neon CHILL | - |
 
-Furnitur yang bergerak terus (animasi ambien): air kolam bergelombang dan pelampung naik-turun, ikan akuarium berenang, neon Ruang Game berdenyut, layar mesin arcade dan TV game bergerak, pohon kelapa tertiup angin.
+Furnitur yang bergerak terus (animasi ambien): air kolam bergelombang dan pelampung naik-turun, ikan akuarium berenang, semua neon berdenyut, layar mesin arcade dan TV game bergerak, pohon kelapa tertiup angin, kursi telur berayun, samsak bergoyang.
+
+**Aktivitas saat menganggur.** Karyawan yang sedang tidak bekerja sesekali pergi beraktivitas, lalu kembali seperti biasa. Begitu ada pekerjaan atau rapat, aktivitasnya langsung berhenti dan ia kembali ke mejanya.
+
+| Aktivitas | Yang terlihat |
+|---|---|
+| Ngopi | jalan ke coffee bar, bikin kopi (uap mengepul), bawa cangkir ke meja, duduk sambil menyeruput |
+| Berenang | nyebur ke kolam, berenang bolak-balik (kepala di atas air, riak, cipratan) |
+| Main PS5 | duduk di kursi gaming memegang stik, sesekali "gol!" |
+| Biliar | berdiri di sisi meja, stik biliar ditarik lalu disodok |
+| Arcade / foosball | berdiri di depan mesin arcade, atau memutar tuas foosball berhadapan |
+| Gym | lari di treadmill, angkat dumbbell bergantian, tinju samsak (keringat menetes) |
+| Santai | rebahan di bean bag sambil main HP |
+
+Aturan dan gambarnya ada di `pixel-office/aktivitas.js` (bobot tiap aktivitas di `__KANTOR_JENIS`).
 
 ![Kolam renang beranimasi](pixel-office/pratinjau-kolam.gif)
 
@@ -130,8 +149,9 @@ Karakter tetap per karyawan (diatur di `pixel-office/karakter.mjs`): Pak Asep ja
 
 - Pasang / perbarui tampilan: `.\tools\pasang-pixel-office.ps1 -MulaiUlang`
 - Kembalikan denah ke desain ini setelah diedit di editor Layout: `.\tools\pasang-pixel-office.ps1 -TimpaLayout -MulaiUlang`
+- Kalau desain denah di repo naik versi (`VERSI_DENAH` di `pixel-office/layout.mjs`), `pasang-pixel-office.ps1` memasang denah baru itu sekali saja (denah lama di-backup ke `~/.pixel-agents/layout.json.bak-*`). Setelah itu suntingan lewat editor Layout dipertahankan lagi.
 - Furnitur beranimasi didaftarkan di `ANIMASI` (`pixel-office/furnitur.mjs`): fungsi gambarnya menerima nomor frame. Frame pertama memakai id lama, jadi denah yang sudah diedit tetap cocok.
-- Ubah desain: edit `pixel-office/furnitur.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
+- Ubah desain: edit `pixel-office/furnitur.mjs` / `furnitur-genz.mjs` / `layout.mjs` / `karakter.mjs`, lalu jalankan perintah di atas.
 - Setelah mengedit denah lewat editor Layout, `pasang-pixel-office.ps1` memperingatkan kalau ada kursi yang jalannya tertutup furnitur (karakter tidak akan bisa ke sana).
 - Karyawan yang duduk di luar ruangannya otomatis dipindah kembali ke ruangannya.
 
