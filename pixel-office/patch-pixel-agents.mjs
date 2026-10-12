@@ -18,11 +18,16 @@
 //    karena kursinya terpilih sebelum pembagian ruangan termuat -- dipindah ke ruangannya.
 // 5. Label karakter: nama folder ("asep") diganti nama karyawan ("Pak Asep") dengan jabatan
 //    di bawahnya ("Manager"). Data dari tools/karyawan.json (nama, jabatan) + PROFIL_LAIN.
-// 6. Animasi ambien: furnitur dengan grup animasi di luar state on/off (kolam renang, akuarium,
-//    neon, ...) beranimasi terus, tidak hanya saat ada karyawan yang bekerja di depannya.
-// 7. Aktivitas karyawan saat menganggur (aktivitas.js): bikin kopi lalu minum di meja, berenang,
-//    PS5, biliar, arcade, foosball, treadmill, dumbbell, samsak, rebahan di bean bag.
+// 6. Animasi ambien: furnitur dengan grup animasi di luar state on/off (onsen, akuarium,
+//    lentera, bambu, ...) beranimasi terus, tidak hanya saat ada karyawan yang bekerja di depannya.
+// 7. Aktivitas karyawan saat menganggur (aktivitas.js): ambil matcha lalu minum di meja, berendam
+//    di onsen, main game di kotatsu, biliar, arcade, foosball, treadmill, dumbel, samsak, rebahan
+//    di bean bag, minum teh di zabuton, meditasi, duduk di bangku taman.
 // 8. Satpam: sesi Claude Code di luar kantor (folder lain di PC) tidak ditampilkan.
+// 9. Cahaya hangat (cahaya.js): peta cahaya pagi/siang/sore/malam ditumpuk di atas kantor.
+//
+// Gaya (dist/webview/assets/index-*.css):
+// 10. Tema antarmuka hangat: variabel warna bawaan (ungu neon) ditimpa arang + aksen matcha.
 //
 // Jalankan ulang setelah `npm install`.
 import fs from 'node:fs'
@@ -174,13 +179,13 @@ const LABEL_NAMA = {
   ganti:
     'a.folderName&&(0,E.jsx)(`span`,{' + SPAN_KECIL + ',style:{fontWeight:`bold`},' +
     'children:((' + PROFIL + ')||{}).nama||a.folderName}),' +
-    'a.folderName&&(' + PROFIL + ')&&(0,E.jsx)(`span`,{' + SPAN_KECIL + ',style:{color:`#ffd93d`,marginTop:`2px`},' +
+    'a.folderName&&(' + PROFIL + ')&&(0,E.jsx)(`span`,{' + SPAN_KECIL + ',style:{color:`#e3c08d`,marginTop:`2px`},' +
     'children:(' + PROFIL + ').jabatan})',
 }
 
 // Animasi ambien: bawaannya furnitur hanya beranimasi saat "menyala" (PC di depan karyawan yang
 // bekerja). Grup animasi yang TIDAK berada di dalam state on/off (nama grupnya berakhiran `_`,
-// mis. `SWIMMING_POOL__`) dianggap animasi ambien: kolam, akuarium, neon, dll. bergerak terus.
+// mis. `ONSEN__`) dianggap animasi ambien: onsen, akuarium, lentera, dll. bergerak terus.
 // `gn` = peta grup animasi -> id frame, `Un` = pembuat instance furnitur dari daftar layout.
 const DETIK_PER_FRAME = 0.35
 const AMBIEN_FUNGSI = {
@@ -231,6 +236,29 @@ const SATPAM = {
     'if(a&&window.__kantorProfil&&!window.__kantorProfil[String(a).toLowerCase()])return;',
 }
 
+// Cahaya hangat (lihat cahaya.js): peta cahaya ditempel di renderer (`ba`) setelah lantai,
+// dinding, furnitur, dan karakter (`ua`), sebelum gelembung status, supaya label tetap jernih.
+// `e` = konteks kanvas, `S`/`C` = geser kanvas, `o` = zoom.
+const CAHAYA_FUNGSI = {
+  nama: 'cahaya hangat (fungsi)',
+  cari: 'var oo=class{layout;',
+  ganti: fs.readFileSync(path.join(HERE, 'cahaya.js'), 'utf8') + '\nvar oo=class{layout;',
+}
+const CAHAYA_GAMBAR = {
+  nama: 'cahaya hangat (gambar)',
+  cari: 'y??[]),va(e,a,S,C,o)',
+  ganti: 'y??[]),__kantorCahaya(e,S,C,o),va(e,a,S,C,o)',
+}
+
+// Tema antarmuka hangat: arang kecokelatan + aksen matcha menggantikan ungu neon bawaan.
+// Ditempel di akhir CSS, jadi menimpa variabel warna bawaan di :root.
+const TEMA_CSS = '\n/* --kantor-tema: arang hangat + aksen matcha (Kantor Ricko) */\n:root{' + [
+  '--color-bg:#262119', '--color-bg-dark:#1d1914', '--color-bg-thumb:#322b23', '--color-border:#5c4e3f',
+  '--color-accent:#8a9a5b', '--color-accent-bright:#a8b86e', '--color-text:#f6eedfe6', '--color-text-muted:#f6eedf8c',
+  '--color-btn-bg:#352e26', '--color-btn-hover:#4a4035', '--color-active-bg:#3f4a2c',
+  '--color-status-active:#8cc4b5', '--color-status-permission:#d9a441', '--color-status-success:#a3b86c',
+].join(';') + '}\n'
+
 // Frame ke-2 dst. tidak ditampilkan sebagai furnitur terpisah di palet editor Layout.
 const AMBIEN_PALET = {
   nama: 'sembunyikan frame animasi dari palet',
@@ -238,21 +266,22 @@ const AMBIEN_PALET = {
   ganti: 't.state===`on`&&c.add(t.id);for(let t of e.catalog)t.animationGroup&&t.frame>0&&c.add(t.id);_n=t;',
 }
 
-function bundelTampilan() {
+function bundelTampilan(ekstensi = 'js') {
   const html = fs.readFileSync(path.join(DIST, 'webview', 'index.html'), 'utf8')
-  const m = html.match(/assets\/(index-[\w-]+\.js)/)
-  if (!m) throw new Error('bundel tampilan (assets/index-*.js) tidak ditemukan di webview/index.html')
+  const m = html.match(new RegExp(`assets/(index-[\\w-]+\\.${ekstensi})`))
+  if (!m) throw new Error(`bundel tampilan (assets/index-*.${ekstensi}) tidak ditemukan di webview/index.html`)
   return path.join(DIST, 'webview', 'assets', m[1])
 }
 
 const TARGET = [
   { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR] },
+  { file: bundelTampilan('css'), penanda: '--kantor-tema', patches: [], tambahan: TEMA_CSS },
 ]
 
 const versi = JSON.parse(fs.readFileSync(path.join(PKG, 'package.json'), 'utf8')).version
 const terpasang = []
-for (const { file, penanda, patches } of TARGET) {
+for (const { file, penanda, patches, tambahan } of TARGET) {
   const asli = `${file}.asli`
   if (!fs.existsSync(asli)) {
     if (fs.readFileSync(file, 'utf8').includes(penanda)) {
@@ -270,7 +299,8 @@ for (const { file, penanda, patches } of TARGET) {
     }
     js = js.replace(p.cari, () => p.ganti)
   }
+  if (tambahan) js += tambahan
   fs.writeFileSync(file, js)
-  terpasang.push(...patches.map(p => p.nama))
+  terpasang.push(...patches.map(p => p.nama), ...(tambahan ? ['tema warna hangat'] : []))
 }
 console.log(`pixel-agents ${versi}: ${terpasang.length} patch terpasang (${terpasang.join('; ')}).`)

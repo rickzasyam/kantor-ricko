@@ -1,6 +1,7 @@
 // Bangun semua aset visual Kantor Ricko:
 //   aset/assets/furniture/*   furnitur kustom (dimuat pixel-agents sebagai folder aset luar)
 //   aset/assets/characters/*  karakter kustom (palette 6 dst.)
+//   pola lantai Jepang (floor_9 dst.) + dinding plester-kayu, langsung ke folder aset pixel-agents
 //   layout-kantor.json        denah kantor
 //   karakter.json             nama folder karyawan -> nomor karakter (dibaca patch pixel-agents)
 //
@@ -12,12 +13,15 @@ import { fileURLToPath } from 'node:url'
 import { buildFurniture } from './furnitur.mjs'
 import { buildCharacters, PEMETAAN_KARAKTER } from './karakter.mjs'
 import { buildLayout, periksaJangkauan } from './layout.mjs'
+import { buildLantai } from './lantai.mjs'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const ASET = path.join(HERE, 'aset', 'assets')
-const BAWAAN = path.join(HERE, 'node_modules', 'pixel-agents', 'dist', 'assets', 'furniture')
+const DIST = path.join(HERE, 'node_modules', 'pixel-agents', 'dist')
+const BAWAAN = path.join(DIST, 'assets', 'furniture')
 
 const furnitur = buildFurniture(path.join(ASET, 'furniture'))
+const lantai = buildLantai(DIST)
 const jumlahKarakter = buildCharacters(path.join(ASET, 'characters'))
 const DIRS = [BAWAAN, path.join(ASET, 'furniture')]
 const { layout, masalah } = buildLayout(DIRS)
@@ -26,6 +30,7 @@ fs.writeFileSync(path.join(HERE, 'layout-kantor.json'), JSON.stringify(layout) +
 fs.writeFileSync(path.join(HERE, 'karakter.json'), JSON.stringify(PEMETAAN_KARAKTER, null, 2) + '\n')
 
 console.log(`Furnitur kustom : ${furnitur.length} item`)
+console.log(`Lantai & dinding: ${lantai.lantai} pola lantai baru, dinding plester-kayu`)
 console.log(`Karakter kustom : ${jumlahKarakter}`)
 console.log(`Denah           : ${layout.cols}x${layout.rows} tile, ${layout.furniture.length} furnitur, ${layout.areas.length} ruangan`)
 if (masalah.length) {
