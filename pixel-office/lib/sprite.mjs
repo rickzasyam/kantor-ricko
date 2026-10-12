@@ -44,6 +44,15 @@ export class Spr {
     return this
   }
 
+  /** Kosongkan piksel (jadi transparan), mis. untuk membulatkan sudut. */
+  hapus(x, y) {
+    x = Math.round(x)
+    y = Math.round(y)
+    if (x < 0 || y < 0 || x >= this.w || y >= this.h) return this
+    this.d.fill(0, (y * this.w + x) * 4, (y * this.w + x) * 4 + 4)
+    return this
+  }
+
   rect(x, y, w, h, c) {
     for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) this.px(x + i, y + j, c)
     return this

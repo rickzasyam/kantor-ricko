@@ -1,7 +1,9 @@
 // Aktivitas karyawan saat menganggur (disuntikkan patch-pixel-agents.mjs ke bundel tampilan
 // pixel-agents 1.4.1, tepat sebelum kelas OfficeState). Karyawan yang tidak sedang bekerja sesekali
-// pergi bikin kopi lalu meminumnya di meja, berenang, main PS5, biliar, arcade, foosball, lari di
-// treadmill, angkat dumbbell, tinju samsak, atau rebahan di bean bag sambil main HP.
+// mengambil matcha di konter lalu meminumnya di meja, berendam di onsen, main PS5 di kotatsu,
+// biliar, arcade, foosball, lari di treadmill, angkat dumbel, tinju samsak, rebahan di bean bag
+// sambil main HP, minum teh di zabuton dekat chabudai, bermeditasi di dojo, atau duduk di bangku
+// nodate taman.
 //
 // Nama hasil minify yang dipakai (hanya berlaku untuk 1.4.1):
 //   R  = state karakter (R.IDLE, R.WALK, R.TYPE)      z  = arah hadap (z.DOWN, z.UP, z.LEFT, z.RIGHT)
@@ -15,10 +17,12 @@
 // tetap memakai logika bawaan (path + state WALK). __kantorGambar() menggambar pose & properti
 // (cangkir, stik PS, stik biliar, ...) di renderer.
 
+// `kopi` = ambil minuman di konter (sekarang matcha). `area` / `bukanArea` membatasi furnitur
+// menurut ruangan (label area di denah).
 var __KANTOR_JENIS = [
-  { jenis: 'kopi', tipe: /^(COFFEE_BAR|COFFEE_MACHINE)$/, bobot: 3, durasi: [4, 4] },
-  { jenis: 'renang', tipe: /^SWIMMING_POOL$/, bobot: 3, durasi: [25, 45] },
-  { jenis: 'ps5', tipe: /^GAMING_CHAIR$/, bobot: 2.5, durasi: [25, 50] },
+  { jenis: 'kopi', tipe: /^(MATCHA_BAR|COFFEE_BAR|COFFEE_MACHINE)$/, bobot: 3, durasi: [4, 4] },
+  { jenis: 'renang', tipe: /^(ONSEN|SWIMMING_POOL)$/, bobot: 3, durasi: [30, 60] },
+  { jenis: 'ps5', tipe: /^(ZAISU|GAMING_CHAIR)/, bobot: 2.5, durasi: [25, 50] },
   { jenis: 'biliar', tipe: /^BILLIARD_TABLE$/, bobot: 2, durasi: [20, 35] },
   { jenis: 'arcade', tipe: /^ARCADE_MACHINE$/, bobot: 1.5, durasi: [15, 30] },
   { jenis: 'foosball', tipe: /^FOOSBALL$/, bobot: 1.5, durasi: [20, 35] },
@@ -26,7 +30,16 @@ var __KANTOR_JENIS = [
   { jenis: 'angkat', tipe: /^DUMBBELL_RACK$/, bobot: 1.5, durasi: [15, 25] },
   { jenis: 'tinju', tipe: /^PUNCH_BAG$/, bobot: 1.5, durasi: [15, 25] },
   { jenis: 'santai', tipe: /^BEAN_BAG/, bobot: 2, durasi: [20, 40] },
+  { jenis: 'teh', tipe: /^ZABUTON/, bukanArea: 'Dojo', bobot: 1.5, durasi: [20, 40] },
+  { jenis: 'meditasi', tipe: /^ZABUTON/, area: 'Dojo', bobot: 1, durasi: [25, 45] },
+  { jenis: 'bangku', tipe: /^BANGKU_NODATE$/, bobot: 1.5, durasi: [20, 40] },
 ]
+
+/** Label area (ruangan) di tile tertentu. */
+function __kantorArea(os, col, row) {
+  var a = os.layout.areaTiles
+  return a ? a[row * os.layout.cols + col] : null
+}
 
 function __kantorFootprint(type) {
   var k = xn(String(type).replace(/:left$/, ''))
@@ -62,15 +75,20 @@ function __kantorCalon(def, f, os) {
       tambah(c, r + h, z.UP, c, r + h - 1, 'f' + c + ',' + r)
       break
     case 'ps5':
-    case 'santai': {
+    case 'santai':
+    case 'teh':
+    case 'meditasi': {
       var kursi = null
       os.seats.forEach(function (s) { if (s.seatCol === c && s.seatRow === r) kursi = s })
       if (kursi && kursi.assigned) return []
-      var arah = def.jenis === 'santai' ? z.DOWN : kursi ? kursi.facingDir : z.UP
+      var arah = def.jenis === 'santai' || def.jenis === 'meditasi' ? z.DOWN : kursi ? kursi.facingDir : z.UP
       ;[[c, r + 1], [c - 1, r], [c + 1, r], [c, r - 1]].forEach(function (t) { tambah(t[0], t[1], arah, c, r, 'f' + c + ',' + r) })
       hasil.forEach(function (h2) { h2.kursi = kursi })
       break
     }
+    case 'bangku':
+      for (x = c; x < c + w; x++) { tambah(x, r + 1, z.DOWN, x, r, 'b' + x + ',' + r); tambah(x, r - 1, z.DOWN, x, r, 'b' + x + ',' + r) }
+      break
     case 'renang':
       for (x = c; x < c + w; x++) { tambah(x, r - 1, z.DOWN, undefined, undefined, 'renang' + x); tambah(x, r + h, z.UP, undefined, undefined, 'renang' + x) }
       for (var y2 = r; y2 < r + h; y2++) { tambah(c - 1, y2, z.RIGHT, undefined, undefined, 'renangk' + y2); tambah(c + w, y2, z.LEFT, undefined, undefined, 'renangk' + y2) }
@@ -100,6 +118,8 @@ function __kantorPilih(os, ch) {
     var calon = []
     os.layout.furniture.forEach(function (f) {
       if (!def.tipe.test(String(f.type).replace(/:left$/, ''))) return
+      var ar = __kantorArea(os, f.col, f.row)
+      if ((def.area && ar !== def.area) || (def.bukanArea && ar === def.bukanArea)) return
       __kantorCalon(def, f, os).forEach(function (k) {
         if (cadang.has(k.kunci)) return
         var bisa = (k.jalan[0] === ch.tileCol && k.jalan[1] === ch.tileRow) || Oi(k.jalan[0], k.jalan[1], os.tileMap, os.blockedTiles)
@@ -224,8 +244,11 @@ function __kantorAktivitas(os, ch, dt) {
 
 // ----------------------------------------------------------------------- renang
 
+// Batas air untuk berenang/berendam, relatif ke pojok kiri-atas sprite kolam. ONSEN: lihat
+// furnitur/taman.mjs (ONSEN.renang); bagian kanan kolam ditempati kapibara.
 function __kantorKolam(a) {
   var X = a.f.col * 16, Y = a.f.row * 16
+  if (/^ONSEN/.test(a.f.type)) return { x0: X + 34, x1: X + 128, y0: Y + 44, y1: Y + 70, bawah: Y + 96, onsen: true }
   return { x0: X + 16, x1: X + 144, y0: Y + 26, y1: Y + 70, bawah: Y + 80 }
 }
 function __kantorMulaiRenang(a, ch) {
@@ -235,10 +258,24 @@ function __kantorMulaiRenang(a, ch) {
   a.sy = k.y0 + Math.random() * (k.y1 - k.y0)
   a.arah = a.sx < (k.x0 + k.x1) / 2 ? 1 : -1
   a.dir = a.arah > 0 ? z.RIGHT : z.LEFT
+  a.diam = 0
   ch.x = a.sx; ch.y = a.sy
 }
 function __kantorRenang(a, ch, dt) {
   var k = __kantorKolam(a)
+  if (k.onsen) {
+    // berendam: bergeser pelan ke titik acak, lalu diam beberapa detik menikmati air panas
+    if (a.diam > 0) { a.diam -= dt }
+    else {
+      if (a.tx === undefined) { a.tx = k.x0 + Math.random() * (k.x1 - k.x0); a.ty = k.y0 + Math.random() * (k.y1 - k.y0) }
+      var dx = a.tx - a.sx, dy = a.ty - a.sy, d = Math.sqrt(dx * dx + dy * dy)
+      if (d < 1.5) { a.tx = undefined; a.diam = Vi(3, 7) }
+      else { a.sx += (dx / d) * 8 * dt; a.sy += (dy / d) * 8 * dt; if (Math.abs(dx) > 0.5) a.arah = dx > 0 ? 1 : -1 }
+    }
+    a.dir = a.arah > 0 ? z.RIGHT : z.LEFT
+    ch.x = a.sx; ch.y = a.sy + Math.sin(a.anim * 1.6) * 0.5
+    return
+  }
   a.sx += a.arah * 20 * dt
   if (a.sx > k.x1) { a.sx = k.x1; a.arah = -1 }
   if (a.sx < k.x0) { a.sx = k.x0; a.arah = 1 }
@@ -274,9 +311,17 @@ function __kantorGambar(l, ch, a, r, i) {
     if (d === z.LEFT) return [X0 + 5, Y0 + 21]
     return [X0 + 13, Y0 + 20]
   }
+  // cangkir keramik krem berisi matcha
   function cangkir(ctx, x, y, uap) {
-    kotak(ctx, x, y, 3, 3, '#ffffff'); kotak(ctx, x, y, 3, 1, '#6b4226'); kotak(ctx, x + 3, y + 1, 1, 1, '#ffffff')
-    if (uap) { var u = Math.floor(akt.anim * 2) % 3; kotak(ctx, x + (u % 2), y - 2 - u, 1, 1, '#ffffffaa') }
+    kotak(ctx, x, y, 3, 3, '#f2e9d9'); kotak(ctx, x, y, 3, 1, '#9cb05c'); kotak(ctx, x + 3, y + 1, 1, 1, '#f2e9d9')
+    if (uap) { var u = Math.floor(akt.anim * 2) % 3; kotak(ctx, x + (u % 2), y - 2 - u, 1, 1, '#fbf6ecaa') }
+  }
+  // duduk di bantal/bangku sambil sesekali menyeruput teh. Kaki dipotong (hanya 22 px atas
+  // yang digambar) dan badan diturunkan supaya tampak duduk di dudukannya, bukan berdiri.
+  function minumDuduk(naik, arah) {
+    gambar.push(sosok(S.typing[arah][0], naik, 22))
+    var ts = tangan(naik), seruput = akt.t % 7 < 1.2
+    tambahan = function (ctx) { cangkir(ctx, ts[0] - (seruput ? 3 : 0), ts[1] - (seruput ? 7 : 0), !seruput) }
   }
 
   // Sedang berjalan membawa kopi: gambar bawaan + cangkir di tangan.
@@ -310,14 +355,27 @@ function __kantorGambar(l, ch, a, r, i) {
     case 'renang': {
       var kol = __kantorKolam(akt)
       zY = kol.bawah + 1
+      if (kol.onsen) {
+        // berendam: hanya bahu & kepala di atas air giok, riak pelan, uap tipis
+        gambar.push(sosok(S.walk[d][1], 13, 18))
+        tambahan = function (ctx) {
+          var y = Math.round(ch.y)
+          kotak(ctx, ch.x - 6, y - 2, 12, 2, '#6aa99bcc')
+          var rr = 5 + (Math.floor(akt.anim * 2) % 3) * 2
+          kotak(ctx, ch.x - rr, y - 1, 2, 1, '#e2f1ea99'); kotak(ctx, ch.x + rr - 2, y - 1, 2, 1, '#e2f1ea99')
+          var u = (akt.anim * 0.6) % 1
+          kotak(ctx, ch.x + 3 + Math.round(Math.sin(akt.anim) * 1), y - 12 - Math.floor(u * 8), 1, 2, 'rgba(251,246,236,' + (0.4 * (1 - u)).toFixed(2) + ')')
+        }
+        break
+      }
       gambar.push(sosok(S.walk[d][k4], 13, 19))
       tambahan = function (ctx) {
         var y = Math.round(ch.y)
-        kotak(ctx, ch.x - 6, y - 2, 12, 2, '#2aa3d699')
-        for (var x = -7; x <= 7; x++) if ((x + Math.floor(akt.anim * 6)) % 3 === 0) kotak(ctx, ch.x + x, y - 1 + (x % 2), 1, 1, '#d9f6ff')
+        kotak(ctx, ch.x - 6, y - 2, 12, 2, '#6aa99b99')
+        for (var x = -7; x <= 7; x++) if ((x + Math.floor(akt.anim * 6)) % 3 === 0) kotak(ctx, ch.x + x, y - 1 + (x % 2), 1, 1, '#e2f1ea')
         var sisi = k2 ? 1 : -1, depan = d === z.RIGHT ? 1 : -1
-        kotak(ctx, ch.x + sisi * 5 + depan * 2, y - 4 - k2, 2, 1, '#ffffff')
-        kotak(ctx, ch.x - depan * 9, y - 1, 2, 1, '#ffffffaa')
+        kotak(ctx, ch.x + sisi * 5 + depan * 2, y - 4 - k2, 2, 1, '#fbf6ec')
+        kotak(ctx, ch.x - depan * 9, y - 1, 2, 1, '#fbf6ecaa')
       }
       break
     }
@@ -326,9 +384,9 @@ function __kantorGambar(l, ch, a, r, i) {
       var tp = tangan(6)
       tambahan = function (ctx) {
         var y = tp[1] + 1
-        if (d === z.UP) { kotak(ctx, X0 + 1, y, 3, 2, '#e9edf2'); kotak(ctx, X0 + 12, y, 3, 2, '#e9edf2'); kotak(ctx, X0 + 2, y, 1, 1, '#3b5bdb') }
-        else { kotak(ctx, X0 + 5, y, 6, 2, '#e9edf2'); kotak(ctx, X0 + 6, y, 1, 1, '#3b5bdb'); kotak(ctx, X0 + 9, y, 1, 1, '#e53e3e') }
-        if (akt.t % 4 < 0.4) kotak(ctx, ch.x - 1, ch.y - 30, 2, 4, '#ffd166')    // tanda seru: gol!
+        if (d === z.UP) { kotak(ctx, X0 + 1, y, 3, 2, '#efe6d6'); kotak(ctx, X0 + 12, y, 3, 2, '#efe6d6'); kotak(ctx, X0 + 2, y, 1, 1, '#66769a') }
+        else { kotak(ctx, X0 + 5, y, 6, 2, '#efe6d6'); kotak(ctx, X0 + 6, y, 1, 1, '#66769a'); kotak(ctx, X0 + 9, y, 1, 1, '#b9573f') }
+        if (akt.t % 4 < 0.4) kotak(ctx, ch.x - 1, ch.y - 30, 2, 4, '#e6c88a')    // tanda seru: gol!
       }
       break
     }
@@ -342,7 +400,7 @@ function __kantorGambar(l, ch, a, r, i) {
           if (d === z.RIGHT) { px = th[0] - 4 + s + maju; py = th[1] + 1 - Math.floor(s / 7) }
           else if (d === z.LEFT) { px = th[0] + 4 - s - maju; py = th[1] + 1 - Math.floor(s / 7) }
           else { px = th[0] - 1; py = th[1] + 2 - s - maju }
-          kotak(ctx, px, py, 1, 1, s === 13 ? '#3a7bd5' : s < 4 ? '#7a4a2a' : '#e2c38f')
+          kotak(ctx, px, py, 1, 1, s === 13 ? '#66769a' : s < 4 ? '#6e4d34' : '#e2c38f')
         }
       }
       break
@@ -354,30 +412,30 @@ function __kantorGambar(l, ch, a, r, i) {
       var tf = tangan(-lompat)
       tambahan = function (ctx) {
         if (akt.jenis === 'arcade') {
-          var w = ['#7cff6b', '#ff4fd8', '#ffd93d'][Math.floor(akt.anim * 4) % 3]
+          var w = ['#bdca7c', '#de8f62', '#e6c88a'][Math.floor(akt.anim * 4) % 3]
           kotak(ctx, ch.x - 3 + k4, ch.y - 34, 1, 1, w)
         } else {
-          kotak(ctx, tf[0] + (d === z.RIGHT ? 1 : -1), tf[1] + (k2 ? 0 : 1), 2, 1, '#c9d1d9')
+          kotak(ctx, tf[0] + (d === z.RIGHT ? 1 : -1), tf[1] + (k2 ? 0 : 1), 2, 1, '#e5d8c1')
         }
       }
       break
     }
     case 'lari':
       gambar.push(sosok(S.walk[d][Math.floor(akt.anim / 0.1) % 4], 0))
-      tambahan = function (ctx) { if (akt.t % 3 < 0.5) kotak(ctx, ch.x + 5, ch.y - 30 + Math.floor((akt.t % 3) * 6), 1, 2, '#7cc6ff') }
+      tambahan = function (ctx) { if (akt.t % 3 < 0.5) kotak(ctx, ch.x + 5, ch.y - 30 + Math.floor((akt.t % 3) * 6), 1, 2, '#b4dccf') }
       break
     case 'angkat': {
       gambar.push(sosok(S.walk[d][1], 0))
       var ta = tangan(0), kiri = Math.floor(akt.anim / 0.7) % 2
       tambahan = function (ctx) {
         function dumbbell(x, y) {
-          kotak(ctx, x, y + 1, 5, 1, '#e9edf2')
-          kotak(ctx, x, y, 2, 3, '#ff6b81'); kotak(ctx, x + 3, y, 2, 3, '#ff6b81')
-          kotak(ctx, x, y, 1, 1, '#ffb3bf'); kotak(ctx, x + 3, y, 1, 1, '#ffb3bf')
+          kotak(ctx, x, y + 1, 5, 1, '#cfc7b8')
+          kotak(ctx, x, y, 2, 3, '#55514a'); kotak(ctx, x + 3, y, 2, 3, '#55514a')
+          kotak(ctx, x, y, 1, 1, '#8a847b'); kotak(ctx, x + 3, y, 1, 1, '#8a847b')
         }
         dumbbell(X0, ta[1] - (kiri ? 7 : 0))
         dumbbell(X0 + 11, ta[1] - (kiri ? 0 : 7))
-        if (akt.t % 4 < 0.6) kotak(ctx, ch.x + 4, ch.y - 28 + Math.floor((akt.t % 4) * 5), 1, 2, '#7cc6ff')
+        if (akt.t % 4 < 0.6) kotak(ctx, ch.x + 4, ch.y - 28 + Math.floor((akt.t % 4) * 5), 1, 2, '#b4dccf')
       }
       break
     }
@@ -386,8 +444,8 @@ function __kantorGambar(l, ch, a, r, i) {
       var tt = tangan(0), jab = Math.floor(akt.anim / 0.25) % 3 === 0 ? 3 : 0
       tambahan = function (ctx) {
         var arah = d === z.RIGHT ? 1 : -1
-        kotak(ctx, tt[0] + arah * (1 + jab), tt[1] - 3, 2, 2, '#e53e3e')
-        kotak(ctx, tt[0] - arah * 3, tt[1] - 2, 2, 2, '#c53030')
+        kotak(ctx, tt[0] + arah * (1 + jab), tt[1] - 3, 2, 2, '#b9573f')
+        kotak(ctx, tt[0] - arah * 3, tt[1] - 2, 2, 2, '#924130')
       }
       break
     }
@@ -395,9 +453,21 @@ function __kantorGambar(l, ch, a, r, i) {
       gambar.push(sosok(S.typing[d][0], 4))
       var hp = tangan(4)
       tambahan = function (ctx) {
-        kotak(ctx, ch.x - 2, hp[1] - 1, 4, 3, '#1d1830')
-        kotak(ctx, ch.x - 1, hp[1], 2, 1, ['#7cc6ff', '#ff8fd0', '#5fe0b0'][Math.floor(akt.anim) % 3])
+        kotak(ctx, ch.x - 2, hp[1] - 1, 4, 3, '#2f2c28')
+        kotak(ctx, ch.x - 1, hp[1], 2, 1, ['#8cc4b5', '#e3b7ae', '#bdca7c'][Math.floor(akt.anim) % 3])
       }
+      break
+    }
+    case 'teh':
+      minumDuduk(14, d)
+      break
+    case 'bangku':
+      minumDuduk(12, z.DOWN)
+      break
+    case 'meditasi': {
+      // duduk bersila diam; sesekali napas panjang (badan naik sedikit)
+      var napas = Math.sin(akt.anim * 0.8) > 0.6 ? 1 : 0
+      gambar.push(sosok(S.typing[z.DOWN][0], 14 - napas, 22))
       break
     }
     default:
