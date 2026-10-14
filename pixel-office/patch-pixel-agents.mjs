@@ -25,6 +25,8 @@
 //    di bean bag, minum teh di zabuton, meditasi, duduk di bangku taman.
 // 8. Satpam: sesi Claude Code di luar kantor (folder lain di PC) tidak ditampilkan.
 // 9. Cahaya hangat (cahaya.js): peta cahaya pagi/siang/sore/malam ditumpuk di atas kantor.
+// 11. Kuota & izin (status.js, + siaran di server): panel kuota Claude Pro dan gelembung
+//     "Needs approval" untuk karyawan yang menunggu izin (dari ~/.claude/sessions/*.json).
 //
 // Gaya (dist/webview/assets/index-*.css):
 // 10. Tema antarmuka hangat: variabel warna bawaan (ungu neon) ditimpa arang + aksen matcha.
@@ -75,6 +77,38 @@ const RAPAT_SERVER = {
     'var aktif=!!(d&&d.aktif&&(!d.sampai||Date.parse(d.sampai)>Date.now()));' +
     'st.broadcast(Object.assign({},d||{},{type:"kantorRapat",aktif:aktif}))},3000).unref()})(c);' +
     'let A=t.host==="0.0.0.0"',
+}
+
+// Status kantor (lihat status.js): tiap 3 detik server membaca kuota (~/.pixel-agents/
+// kantor-kuota.json, ditulis tools/status-kantor.mjs) dan status sesi Claude Code
+// (~/.claude/sessions/<pid>.json). Sesi yang menunggu izin dicocokkan ke agen lewat sessionId
+// (= nama file transkrip). `c` = penyimpan agen (c.agents: Map id -> agen).
+const STATUS_SERVER = {
+  nama: 'siarkan kuota & izin',
+  cari: 'let A=t.host==="0.0.0.0"',
+  ganti:
+    '(function(st){var fs=require("fs"),path=require("path"),home=require("os").homedir(),' +
+    'fk=path.join(home,".pixel-agents","kantor-kuota.json"),ds=path.join(home,".claude","sessions");' +
+    'function hidup(pid){try{process.kill(pid,0);return true}catch(e){return e.code==="EPERM"}}' +
+    'setInterval(function(){var k=null;try{k=JSON.parse(fs.readFileSync(fk,"utf8"))}catch(e){}' +
+    'var tunggu=new Set;try{fs.readdirSync(ds).forEach(function(n){if(!/\\.json$/.test(n))return;' +
+    'try{var s=JSON.parse(fs.readFileSync(path.join(ds,n),"utf8"));' +
+    'if(s.status==="waiting"&&/permission/i.test(s.waitingFor||"")&&hidup(s.pid))tunggu.add(s.sessionId)}catch(e){}})}catch(e){}' +
+    'var izin=[];st.agents.forEach(function(a,id){if(a&&tunggu.has(a.sessionId))izin.push(id)});' +
+    'st.broadcast({type:"kantorStatus",kuota:k,izin:izin})},3000).unref()})(c);' +
+    'let A=t.host==="0.0.0.0"',
+}
+
+const STATUS_TERIMA = {
+  nama: 'terima kuota & izin',
+  cari: 's.type===`kantorRapat`){',
+  ganti: 's.type===`kantorStatus`){__kantorStatus(s,lo,nn)}else if(s.type===`kantorRapat`){',
+}
+
+const STATUS_FUNGSI = {
+  nama: 'kuota & izin (fungsi)',
+  cari: 'var oo=class{layout;',
+  ganti: fs.readFileSync(path.join(HERE, 'status.js'), 'utf8') + '\nvar oo=class{layout;',
 }
 
 const RAPAT_TERIMA = {
@@ -274,8 +308,8 @@ function bundelTampilan(ekstensi = 'js') {
 }
 
 const TARGET = [
-  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR] },
+  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER, STATUS_SERVER] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, STATUS_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR, STATUS_FUNGSI] },
   { file: bundelTampilan('css'), penanda: '--kantor-tema', patches: [], tambahan: TEMA_CSS },
 ]
 

@@ -6,6 +6,10 @@
 // (memakai bot karyawan itu) dan menjelaskan cara memperbaikinya. Gagal kirim lewat bot -> lewat
 // webhook #ruang-rapat.
 //
+// Hook Notification (permission_prompt) memakai script yang sama: karyawan yang menunggu izin
+// di terminal tersembunyi dilaporkan supaya tidak terlihat seperti macet. Kalau pesan Discord
+// terakhir sudah lebih dari 2 jam (tugas datang lewat interkom), laporan masuk ke #ruang-rapat.
+//
 // Hanya berjalan saat ada kegagalan (tidak ada proses yang terus menyala). Masalah yang sama di
 // channel yang sama dilaporkan paling sering sekali per 30 menit, supaya tidak banjir pesan.
 //
@@ -52,9 +56,14 @@ function pesanTerakhir(transkrip) {
     const n = Math.min(ukuran, 400_000)
     const buf = Buffer.alloc(n)
     readSync(fd, buf, 0, n, ukuran - n)
-    const cocok = [...buf.toString('utf8').matchAll(/source=\\?"plugin:discord:discord\\?" chat_id=\\?"(\d+)\\?" message_id=\\?"(\d+)\\?"/g)]
+    const cocok = [...buf.toString('utf8').matchAll(/source=\\?"plugin:discord:discord\\?" chat_id=\\?"(\d+)\\?" message_id=\\?"(\d+)\\?"(?:[^>]*? ts=\\?"([^"\\]+))?/g)]
     const akhir = cocok.at(-1)
-    return akhir ? { chatId: akhir[1], messageId: akhir[2] } : null
+    if (!akhir) return null
+    // Pesan Discord yang sudah lama berarti tugasnya datang dari tempat lain (mis. interkom):
+    // jangan membalas obrolan lama, pakai #ruang-rapat saja.
+    const waktu = akhir[3] ? Date.parse(akhir[3]) : NaN
+    if (Number.isFinite(waktu) && Date.now() - waktu > 2 * 3600_000) return null
+    return { chatId: akhir[1], messageId: akhir[2] }
   } finally {
     closeSync(fd)
   }
@@ -120,12 +129,19 @@ async function kirimLewatWebhook(isi, pemilik) {
 async function main() {
   let input = {}
   try { input = JSON.parse(readFileSync(0, 'utf8')) } catch {}
-  const error = input.error
+  // Hook Notification (permission_prompt): karyawan berhenti menunggu izin di terminalnya yang
+  // tersembunyi -- dari luar terlihat seperti macet.
+  const izin = input.hook_event_name === 'Notification'
+  const error = izin ? 'izin' : input.error
   if (!error) return
   const tujuan = pesanTerakhir(input.transcript_path)
   if (sudahDilaporkan(`${error}|${tujuan?.chatId ?? 'ruang-rapat'}`)) return
   const pemilik = bacaJson(join(KANTOR, 'config.json')).ownerId
-  const isi = pesanUntuk(error) + (input.error_details ? `\n-# ${String(input.error_details).slice(0, 150)}` : '')
+  const isi = izin
+    ? `🔐 ${nama} menunggu izin Pak Ricko sebelum lanjut bekerja` +
+      (input.message ? `: *${String(input.message).slice(0, 150)}*` : '.') +
+      '\nSetujui lewat DM dari bot ini, atau klik ikon **Lihat Kantor** lalu jawab di tab ' + nama + '.'
+    : pesanUntuk(error) + (input.error_details ? `\n-# ${String(input.error_details).slice(0, 150)}` : '')
   let terkirim = false
   try { terkirim = await kirimLewatBot(tujuan, isi, pemilik) } catch {}
   if (!terkirim) await kirimLewatWebhook(isi, pemilik)
