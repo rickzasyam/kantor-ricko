@@ -1,5 +1,5 @@
 {
-  "model": "sonnet",
+  "model": "opus",
   "effortLevel": "high",
   "enabledPlugins": { "discord@claude-plugins-official": true },
   "autoMemoryEnabled": true,
@@ -23,6 +23,18 @@
           {
             "type": "command",
             "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/interkom-log.mjs\" \"Ujang\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "matcher": "authentication_failed|oauth_org_not_allowed|account_on_hold|billing_error|rate_limit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/alarm-gagal.mjs\" \"Ujang\" ujang",
             "timeout": 15
           }
         ]

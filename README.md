@@ -5,8 +5,8 @@ Enam karyawan AI (Claude Code) yang bekerja lewat Discord, saling berdiskusi lew
 | Karyawan | Role | Nama interkom | Model dasar | Asal |
 |---|---|---|---|---|
 | Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 | Sunda (Bandung) |
-| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 | Sunda (Garut) |
-| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet 5.5 | Sunda (Sukabumi) |
+| Kokom | Akuntan Senior | `kokom` | Opus 5.5 | Sunda (Garut) |
+| Ujang | Spreadsheet & Automation Engineer | `ujang` | Opus 5.5 | Sunda (Sukabumi) |
 | Joko | Full-stack Developer | `joko` | Opus 5.5 | Jawa (Solo) |
 | Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 | Jawa (Semarang) |
 | Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 | Bali (Denpasar) |
@@ -35,6 +35,7 @@ tools/
   pasang-shortcut.ps1       autostart Windows + ikon desktop (-Hapus untuk melepas)
   update-kantor.ps1         ambil perubahan dari GitHub lalu terapkan (ikon Update Kantor)
   interkom-log.mjs          salin pesan interkom ke #ruang-rapat
+  alarm-gagal.mjs           alarm di Discord saat karyawan gagal bekerja (login kedaluwarsa, kuota habis)
   rapat.mjs                 mode rapat: karakter peserta berkumpul di Ruang Rapat Pixel Office
 ```
 
@@ -106,6 +107,10 @@ Balasan Pak Asep muncul di `#lobby`, obrolan interkomnya muncul di `#ruang-rapat
 Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di layar, tidak di taskbar). Izin yang perlu persetujuan dikirim ke DM Discord Anda.
 
 Yang boleh mengobrol dan memberi perintah lewat Discord: Pak Ricko dan orang di `tools/atasan.json` (sekarang **Bu Ghina**). Daftar ini disalin ke `access.json` tiap bot setiap kantor dibuka. Orang di daftar itu juga bisa menyetujui izin karyawan dari Discord, jadi isi hanya dengan orang yang dipercaya. Aksi yang tidak bisa dibatalkan (kirim ke klien, hapus, bayar, publish) tetap menunggu oke Pak Ricko.
+
+**Alarm kegagalan.** Kalau karyawan tidak bisa mengerjakan pesan karena masalah akun Claude, botnya langsung membalas pesan itu di channel yang sama beserta cara memperbaikinya. Contohnya login kedaluwarsa, kuota Pro habis, atau masalah tagihan. Tanpa alarm ini yang terlihat hanya reaksi 👀 lalu sepi. Alarm hanya berjalan saat ada kegagalan, dan masalah yang sama di channel yang sama dilaporkan paling sering sekali per 30 menit. Kalau botnya tidak bisa mengirim, pesan masuk ke `#ruang-rapat`. Pengaturannya ada di hook `StopFailure` (`kantor-settings.json`) dan `tools/alarm-gagal.mjs`.
+
+Login kedaluwarsa diperbaiki begini: buka PowerShell, ketik `claude`, lalu `/login`, lalu `/exit`. Setelah itu klik **Tutup Kantor** dan **Buka Kantor**.
 
 | Kebutuhan | Ikon desktop | Perintah |
 |---|---|---|
