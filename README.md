@@ -35,7 +35,8 @@ tools/
   pasang-shortcut.ps1       autostart Windows + ikon desktop (-Hapus untuk melepas)
   update-kantor.ps1         ambil perubahan dari GitHub lalu terapkan (ikon Update Kantor)
   interkom-log.mjs          salin pesan interkom ke #ruang-rapat
-  alarm-gagal.mjs           alarm di Discord saat karyawan gagal bekerja (login kedaluwarsa, kuota habis)
+  alarm-gagal.mjs           alarm di Discord saat karyawan gagal bekerja (login kedaluwarsa, kuota habis) atau menunggu izin
+  status-kantor.mjs         status line karyawan: simpan pemakaian kuota Claude untuk panel Pixel Office
   rapat.mjs                 mode rapat: karakter peserta berkumpul di Ruang Rapat Pixel Office
 ```
 
@@ -55,6 +56,7 @@ pixel-office/
   layout.mjs                denah kantor 50x36 (9 ruangan) + cek semua kursi bisa didatangi
   aktivitas.js              aktivitas karyawan saat menganggur (disuntikkan ke pixel-agents)
   cahaya.js                 cahaya hangat pagi/siang/sore/malam (disuntikkan ke pixel-agents)
+  status.js                 panel kuota + gelembung "Needs approval" (disuntikkan ke pixel-agents)
   patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien, aktivitas, cahaya, tema warna)
   aset/                     hasil bangun: folder aset tambahan untuk pixel-agents (tidak disimpan di git)
 ```
@@ -108,7 +110,9 @@ Karyawan bekerja di jendela Windows Terminal yang **disembunyikan** (tidak di la
 
 Yang boleh mengobrol dan memberi perintah lewat Discord: Pak Ricko dan orang di `tools/atasan.json` (sekarang **Bu Ghina**). Daftar ini disalin ke `access.json` tiap bot setiap kantor dibuka. Orang di daftar itu juga bisa menyetujui izin karyawan dari Discord, jadi isi hanya dengan orang yang dipercaya. Aksi yang tidak bisa dibatalkan (kirim ke klien, hapus, bayar, publish) tetap menunggu oke Pak Ricko.
 
-**Alarm kegagalan.** Kalau karyawan tidak bisa mengerjakan pesan karena masalah akun Claude, botnya langsung membalas pesan itu di channel yang sama beserta cara memperbaikinya. Contohnya login kedaluwarsa, kuota Pro habis, atau masalah tagihan. Tanpa alarm ini yang terlihat hanya reaksi 👀 lalu sepi. Alarm hanya berjalan saat ada kegagalan, dan masalah yang sama di channel yang sama dilaporkan paling sering sekali per 30 menit. Kalau botnya tidak bisa mengirim, pesan masuk ke `#ruang-rapat`. Pengaturannya ada di hook `StopFailure` (`kantor-settings.json`) dan `tools/alarm-gagal.mjs`.
+**Alarm kegagalan.** Kalau karyawan tidak bisa mengerjakan pesan karena masalah akun Claude, botnya langsung membalas pesan itu di channel yang sama beserta cara memperbaikinya. Contohnya login kedaluwarsa, kuota Pro habis, atau masalah tagihan. Tanpa alarm ini yang terlihat hanya reaksi 👀 lalu sepi. Alarm hanya berjalan saat ada kegagalan, dan masalah yang sama di channel yang sama dilaporkan paling sering sekali per 30 menit. Kalau botnya tidak bisa mengirim, pesan masuk ke `#ruang-rapat`. Karyawan yang **menunggu izin** juga dilaporkan dengan cara yang sama, karena pertanyaan izinnya muncul di terminal yang tersembunyi. Pengaturannya ada di hook `StopFailure` dan `Notification` (`kantor-settings.json`) serta `tools/alarm-gagal.mjs`.
+
+Karyawan boleh membaca dan mengedit file di `Documents\Coding` (folder proyek seperti `rosanna-automation`) dan di Google Drive kantor tanpa ditanya dulu.
 
 Login kedaluwarsa diperbaiki begini: buka PowerShell, ketik `claude`, lalu `/login`, lalu `/exit`. Setelah itu klik **Tutup Kantor** dan **Buka Kantor**.
 
@@ -168,6 +172,8 @@ Furnitur yang bergerak terus (animasi ambien): air onsen beriak dan beruap, uap 
 Aturan dan gambarnya ada di `pixel-office/aktivitas.js` (bobot tiap aktivitas di `__KANTOR_JENIS`).
 
 ![Taman onsen beranimasi](pixel-office/pratinjau-onsen.gif)
+
+**Kuota & izin.** Panel di pojok kanan atas menampilkan pemakaian Claude Pro: limit 5 jam dan mingguan (hijau di bawah 60%, kuning sampai 85%, merah di atasnya) beserta jam reset-nya. Klik panel untuk mengecilkannya. Angkanya diperbarui setiap ada karyawan yang selesai menjawab, jadi waktu kantor sepi angkanya bisa beberapa jam lalu. Karyawan yang menunggu izin Pak Ricko mendapat gelembung **Needs approval** di atas kepalanya, diambil dari status asli Claude Code.
 
 Label di atas karakter menampilkan status, nama, dan jabatan (mis. *Pak Asep — Manager*). Nama dan jabatan diambil dari `tools/karyawan.json` (kolom `nama`, `jabatan`); setelah diubah jalankan `.\tools\pasang-pixel-office.ps1` lalu muat ulang browser.
 

@@ -5,6 +5,7 @@
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Pak Asep\\memori",
   "crossSessionInbound": "accept",
+  "statusLine": { "type": "command", "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/status-kantor.mjs\" pak-asep" },
   "claudeMdExcludes": ["**/Kantor-Ricko/CLAUDE.md"],
   "env": {
     "DISCORD_STATE_DIR": "C:\\Users\\Ricko Erlangga\\.claude\\channels\\kantor-ricko\\pak-asep",
@@ -13,7 +14,7 @@
   },
   "permissions": {
     "allow": ["mcp__plugin_discord_discord", "Bash(node ../../tools/rapat.mjs *)"],
-    "additionalDirectories": ["G:\\My Drive\\Kantor Ricko"]
+    "additionalDirectories": ["G:\\My Drive\\Kantor Ricko", "C:\\Users\\Ricko Erlangga\\Documents\\Coding"]
   },
   "hooks": {
     "PostToolUse": [
@@ -23,6 +24,18 @@
           {
             "type": "command",
             "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/interkom-log.mjs\" \"Pak Asep\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/alarm-gagal.mjs\" \"Pak Asep\" pak-asep",
             "timeout": 15
           }
         ]
