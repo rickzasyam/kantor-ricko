@@ -38,7 +38,8 @@ Peta file: lihat bagian "Isi folder" di `README.md`. Daftar karyawan + jabatan: 
 - Jangan pakai `claude --bg` / `claude agents` (sudah diuji: channel Discord hilang, daemon menyala). Jangan pernah mematikan `WindowsTerminal.exe` (jendela kantor tersembunyi ada di sana).
 - Karyawan sehat = proses `claude.exe` dengan `--name <id>` + `kantor-settings.json`, punya proses `bun.exe` (Discord), dan file `~/.claude/sessions/<pid>.json` (interkom; `status: idle` = aman dibuka ulang).
 - Perubahan `karyawan/**/CLAUDE.md` atau `kantor-settings.json` baru berlaku setelah karyawan dibuka ulang.
-- Model per karyawan diatur di `kantor-settings.json` (`model`, `effortLevel`): Pak Asep haiku, Joko opus, lainnya sonnet. Mode `auto` mendukung Haiku 5.5.
+- Model per karyawan diatur di `kantor-settings.json` (`model`, `effortLevel`): Pak Asep haiku, Kokom/Ujang/Joko opus, Neneng/Ayu sonnet. Mode `auto` mendukung Haiku 5.5.
+- Karyawan yang gagal karena akun (login kedaluwarsa, kuota habis) tidak bisa membalas sendiri. Hook `StopFailure` di `kantor-settings.json` menjalankan `tools/alarm-gagal.mjs`, yang membalas pesan Discord terakhir lewat bot karyawan itu (cadangan: webhook `#ruang-rapat`), paling sering sekali per 30 menit per masalah+channel (`~/.claude/channels/kantor-ricko/alarm-gagal.json`). Uji dengan server tiruan: env `KANTOR_DISCORD_API` + `INTERKOM_WEBHOOK_FILE`, dan picu `StopFailure` lewat `claude -p --model <nama-palsu>` (matcher `model_not_found`). Path dari Git Bash harus `cygpath -m`.
 - Plugin Discord membuang pesan dari bot lain, jadi karyawan tidak bisa saling bicara lewat Discord, hanya lewat interkom.
 
 **Pixel Office (pixel-agents 1.4.1)**

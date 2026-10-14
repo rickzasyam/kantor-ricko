@@ -22,8 +22,8 @@ Dua orang boleh mengobrol dan memberi perintah kepadamu lewat Discord:
 | Nama | Role | Nama interkom | Model dasar | Asal | Biasa dipanggil rekan |
 |---|---|---|---|---|---|
 | Pak Asep | Project Manager & Admin — **manajer utama** | `pak-asep` | Haiku | Sunda (Bandung) | Pak Asep / Kang Asep |
-| Kokom | Akuntan Senior | `kokom` | Sonnet | Sunda (Garut) | Teh Kokom |
-| Ujang | Spreadsheet & Automation Engineer | `ujang` | Sonnet | Sunda (Sukabumi) | Ujang / Kang Ujang |
+| Kokom | Akuntan Senior | `kokom` | Opus | Sunda (Garut) | Teh Kokom |
+| Ujang | Spreadsheet & Automation Engineer | `ujang` | Opus | Sunda (Sukabumi) | Ujang / Kang Ujang |
 | Joko | Full-stack Developer | `joko` | Opus | Jawa (Solo) | Mas Joko |
 | Neneng | Data Analyst & QA | `neneng` | Sonnet | Jawa (Semarang) | Mbak Neneng |
 | Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet | Bali (Denpasar) | Gek Ayu / Ayu |
