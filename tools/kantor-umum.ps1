@@ -87,6 +87,23 @@ function Clear-TandaDiscordGagal {
   Write-Host '  (tanda "Discord gagal" dari sesi lain dibersihkan)'
 }
 
+# Karyawan yang terhenti karena kuota Pro habis menunggu lalu melanjutkan tugasnya sendiri setelah
+# kuota pulih (autoContinueAtUsageLimit). Pengaturan ini hanya dibaca dari ~/.claude/settings.json,
+# bukan dari kantor-settings.json, jadi dipasang di sini. Bagian lain file dibiarkan apa adanya.
+function Set-LanjutSetelahKuota {
+  $file = Join-Path $env:USERPROFILE '.claude\settings.json'
+  $text = if (Test-Path $file) { [IO.File]::ReadAllText($file) } else { '{}' }
+  if ($text -match '"autoContinueAtUsageLimit"') { return }
+  if ($text -match '^\s*\{\s*\}\s*$') {
+    $baru = "{`n  `"autoContinueAtUsageLimit`": true`n}`n"
+  } else {
+    $baru = ([regex]'\{').Replace($text, "{`n  `"autoContinueAtUsageLimit`": true,", 1)
+  }
+  try { $null = $baru | ConvertFrom-Json } catch { return }   # jangan pernah menulis JSON rusak
+  [IO.File]::WriteAllText($file, $baru, (New-Object System.Text.UTF8Encoding $false))
+  Write-Host '  (karyawan otomatis lanjut bekerja setelah kuota Pro pulih)'
+}
+
 # Siapa saja yang boleh memerintah karyawan lewat Discord: Pak Ricko (ownerId di config.json,
 # diisi setup-discord.ps1) ditambah orang di tools\atasan.json (mis. Bu Ghina).
 function Get-IdPemberiPerintah {

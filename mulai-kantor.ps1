@@ -45,6 +45,7 @@ if (-not (Test-Path $DriveKantor)) {
 
 Write-Host 'Membuka kantor...' -ForegroundColor Cyan
 Clear-TandaDiscordGagal
+Set-LanjutSetelahKuota
 Sync-AksesDiscord
 $perluDibuka = @()
 foreach ($k in $karyawan) {

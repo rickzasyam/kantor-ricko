@@ -116,10 +116,23 @@ Karyawan boleh membaca dan mengedit file di `Documents\Coding` (folder proyek se
 
 Login kedaluwarsa diperbaiki begini: buka PowerShell, ketik `claude`, lalu `/login`, lalu `/exit`. Setelah itu klik **Tutup Kantor** dan **Buka Kantor**.
 
+**Kerja mandiri.** Karyawan diatur untuk bekerja sendiri sampai beres. Perintah Pak Ricko, termasuk yang diteruskan rekan lewat interkom, sudah dianggap izin untuk semua langkahnya. Sebelum mengubah besar file asli klien, mereka membuat cadangan dulu. Mereka hanya bertanya kalau kebutuhannya tidak jelas (semua pertanyaan dalam satu pesan), atau untuk empat hal yang tetap butuh oke Pak Ricko:
+- kirim ke klien atau pihak luar
+- hapus file asli klien
+- pembayaran
+- publish ke domain publik
+
+Aturannya ada di bagian "Kerja mandiri sampai beres" di `karyawan/CLAUDE.md`.
+
+**Supaya hemat kuota:**
+- Tulis semua kebutuhan dalam **satu pesan**, karena setiap pesan membangunkan satu meja karyawan.
+- Klik **Buka Kantor Baru** seminggu sekali, saat tim sedang santai. Meja yang tebal (percakapan panjang) dibaca ulang setiap kali karyawan bekerja. Ingatan jangka panjang di Drive tetap ada.
+
 | Kebutuhan | Ikon desktop | Perintah |
 |---|---|---|
 | Buka kantor (otomatis saat login) | Buka Kantor | `.\mulai-kantor.ps1` |
 | Lihat / sembunyikan terminal karyawan | Lihat Kantor | `.\tampilkan-kantor.ps1` |
+| Meja bersih, hemat kuota (seminggu sekali, saat tim sedang santai) | Buka Kantor Baru | `.\mulai-kantor.ps1 -Baru` |
 | Tutup kantor | Tutup Kantor | `.\tutup-kantor.ps1` |
 | Ada karyawan yang tidak membalas | Buka Kantor (memperbaiki yang putus) | `.\mulai-kantor.ps1` |
 | Hemat kuota: sebagian karyawan saja | | `.\mulai-kantor.ps1 -Hanya pak-asep,ujang,kokom` |
@@ -231,7 +244,7 @@ Tiga lapis supaya karyawan tidak lupa:
 
 - Semua karyawan memakai **satu akun Claude Pro** — kuota dipakai bersama. Karyawan yang menunggu di-tag tidak memakai kuota.
 - Enam karyawan yang bekerja bersamaan memakai banyak RAM. Kalau ditambah game atau aplikasi berat, RAM 16 GB habis dan Windows memakai disk C: sebagai memori tambahan (pagefile) sampai C: penuh. Akibatnya file gagal disimpan (`ENOSPC`) dan sebagian karyawan bisa mati. Sisakan ruang kosong di C: (idealnya 30 GB lebih), dan saat main game kecilkan kantor: `.\mulai-kantor.ps1 -Hanya pak-asep` atau tutup kantor dulu. Karyawan yang mati dihidupkan lagi lewat ikon **Buka Kantor**.
-- Mode izin: **auto** — aksi aman berjalan tanpa bertanya, aksi berisiko diperiksa dulu.
+- Mode izin: **auto** — aksi aman berjalan tanpa bertanya, aksi berisiko diperiksa dulu. Karyawan yang terhenti karena kuota Pro habis menunggu lalu melanjutkan sendiri setelah kuota pulih (`autoContinueAtUsageLimit`, dipasang `mulai-kantor.ps1` di `~/.claude/settings.json`).
 - *Background session* Claude Code (`claude --bg`) sudah diuji dan tidak dipakai: plugin Discord gagal menyala di proses cadangan daemon, hilang saat sesi dibangunkan ulang, dan sesi yang menganggur dimatikan setelah ±1 jam. Sebagai gantinya jendela terminal disembunyikan.
 - Tidak bisa dijalankan di GitHub Actions / Vercel: karyawan butuh PC ini (login Claude, Google Drive `G:`, Pixel Office lokal).
 - Plugin Discord hanya aktif di sesi karyawan (`enabledPlugins` di `kantor-settings.json`); di sesi Claude Code lain dimatikan di `~/.claude/settings.json`. Kalau plugin itu gagal di sesi mana pun, Claude Code menandainya "perlu login" di `~/.claude/mcp-needs-auth-cache.json` dan semua sesi berikutnya melewatkannya — `mulai-kantor.ps1` menghapus tanda itu setiap membuka kantor.
