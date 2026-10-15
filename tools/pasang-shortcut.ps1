@@ -6,6 +6,7 @@
   Membuat:
   - Startup Windows : "Kantor Ricko"     -> kantor terbuka otomatis saat login (tanpa jendela)
   - Desktop         : "Buka Kantor"      -> buka kantor + Pixel Office di browser
+  - Desktop         : "Buka Kantor Baru" -> buka kantor dengan meja bersih (percakapan baru), seminggu sekali
   - Desktop         : "Tutup Kantor"     -> semua karyawan pulang
   - Desktop         : "Lihat Kantor"     -> tampilkan / sembunyikan jendela terminal karyawan
   - Desktop         : "Update Kantor"    -> ambil perubahan dari GitHub lalu terapkan
@@ -32,6 +33,9 @@ $shortcuts = @(
   @{ Path = (Join-Path $desktop 'Buka Kantor.lnk'); Target = $ps; Style = 1
      Args = "-NoProfile -ExecutionPolicy Bypass -Command `"& '$mulai'; Start-Sleep -Seconds 8`""
      Desc = 'Buka Kantor Ricko dan Pixel Office' },
+  @{ Path = (Join-Path $desktop 'Buka Kantor Baru.lnk'); Target = $ps; Style = 1
+     Args = "-NoProfile -ExecutionPolicy Bypass -Command `"& '$mulai' -Baru; Start-Sleep -Seconds 8`""
+     Desc = 'Buka kantor dengan meja bersih (percakapan baru, ingatan tetap) - hemat kuota, pakai seminggu sekali' },
   @{ Path = (Join-Path $desktop 'Tutup Kantor.lnk'); Target = $ps; Style = 1
      Args = "-NoProfile -ExecutionPolicy Bypass -Command `"& '$tutup'; Start-Sleep -Seconds 4`""
      Desc = 'Semua karyawan Kantor Ricko pulang' },

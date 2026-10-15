@@ -78,5 +78,12 @@ if ($perluPixel) {
   & (Join-Path $KantorRoot 'mulai-kantor.ps1') -TanpaBrowser
 }
 
+# --- Ikon desktop: pasang ulang kalau daftar ikonnya berubah (mis. ikon baru) ---------
+if ($berubah -match '^tools/pasang-shortcut\.ps1$') {
+  Write-Host ''
+  Write-Host 'Ikon desktop berubah. Memasang ulang...' -ForegroundColor Cyan
+  & (Join-Path $PSScriptRoot 'pasang-shortcut.ps1')
+}
+
 Write-Host ''
 Write-Host 'Update selesai.' -ForegroundColor Green
