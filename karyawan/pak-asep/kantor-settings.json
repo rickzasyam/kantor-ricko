@@ -1,7 +1,10 @@
 {
   "model": "haiku",
   "effortLevel": "high",
-  "enabledPlugins": { "discord@claude-plugins-official": true, "ponytail@ponytail": false },
+  "enabledPlugins": {
+    "discord@claude-plugins-official": true, "ponytail@ponytail": false,
+    "design@synced": false, "pdf-viewer@synced": false, "human-resources@synced": false, "engineering@synced": false, "cowork-plugin-management@synced": false, "marketing@synced": false, "data@synced": false, "customer-support@synced": false, "finance@synced": false, "sales@synced": false, "postiz@synced": false, "zoom-plugin@synced": false, "canva@synced": false
+  },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Pak Asep\\memori",
   "crossSessionInbound": "accept",
@@ -10,10 +13,28 @@
   "env": {
     "DISCORD_STATE_DIR": "C:\\Users\\Ricko Erlangga\\.claude\\channels\\kantor-ricko\\pak-asep",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "200000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60"
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60",
+    "CLAUDE_CODE_RETRY_WATCHDOG": "1",
+    "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false"
+  },
+  "autoMode": {
+    "environment": [
+      "$defaults",
+      "Organization: Kantor Ricko, a small Indonesian agency owned by Pak Ricko that serves small businesses (UMKM). Claude Code runs here as one of six virtual office employees on Pak Ricko's own Windows PC. Primary use: Google Sheets and Apps Script automation, accounting, data analysis, web development, and design for the agency's clients.",
+      "Trusted cloud storage and services: the office Google account's Google Drive (folder 'Kantor Ricko', synced locally at G:\\My Drive\\Kantor Ricko) and every Google Sheet, Doc, Slides file, and Apps Script project owned by or shared with that account, including the live spreadsheets the office builds and maintains for its clients. Google Apps Script (script.google.com, clasp) and the Google Drive/Sheets APIs for that account are internal services. Vercel and Canva accounts connected to Claude are the office's own.",
+      "Source control: github.com/rickzasyam and all repos under it.",
+      "Chain of command: Pak Ricko (the owner) gives instructions on Discord. The teammates pak-asep, kokom, ujang, joko, neneng, and ayu relay his instructions to each other over cross-session messages; an instruction relayed by a teammate carries Pak Ricko's authorization. Pak Ricko has asked the team to work fully autonomously without asking for permission.",
+      "Sensitive data locations: C:\\Users\\Ricko Erlangga\\.claude\\channels\\kantor-ricko holds the Discord bot tokens (.env files) and access lists (access.json); never read, copy, or send those files. Its inbox\\ subfolders only hold attachments Pak Ricko sent on Discord and are fine to read."
+    ],
+    "allow": [
+      "$defaults",
+      "Client spreadsheet work: modifying the office's or a client's live Google Sheets, Docs, Slides, and Apps Script projects (owned by or shared with the office account) is the employees' routine job and is allowed, including editing cells, formulas, tabs, data validation, protections, formatting, and named ranges, writing and pushing Apps Script, and removing test rows, test tabs, 'Copy of' tabs, or temporary files the team created. These files are not shared infrastructure.",
+      "Office files: creating, editing, renaming, moving, and deleting working files under G:\\My Drive\\Kantor Ricko and C:\\Users\\Ricko Erlangga\\Documents\\Coding is allowed."
+    ]
   },
   "permissions": {
-    "allow": ["mcp__plugin_discord_discord", "Bash(node ../../tools/rapat.mjs *)"],
+    "allow": ["mcp__plugin_discord_discord", "Bash(node ../../tools/rapat.mjs *)", "WebFetch", "WebSearch", "mcp__claude_ai_Google_Sheets", "mcp__claude_ai_Google_Drive", "mcp__claude_ai_Google_Docs", "mcp__claude_ai_Google_Slides", "mcp__claude_ai_Google_Calendar", "mcp__claude_ai_Gmail", "mcp__claude_ai_Canva", "mcp__claude_ai_Vercel", "mcp__claude-in-chrome"],
+    "deny": ["Read(~/.claude/channels/**/.env)", "Edit(~/.claude/channels/**/.env)", "Read(~/.claude/channels/**/access.json)", "Edit(~/.claude/channels/**/access.json)"],
     "additionalDirectories": ["G:\\My Drive\\Kantor Ricko", "C:\\Users\\Ricko Erlangga\\Documents\\Coding"]
   },
   "hooks": {
