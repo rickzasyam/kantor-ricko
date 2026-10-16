@@ -1,7 +1,7 @@
 {
   "model": "opus",
   "effortLevel": "high",
-  "enabledPlugins": { "discord@claude-plugins-official": true },
+  "enabledPlugins": { "discord@claude-plugins-official": true, "impeccable@impeccable": true },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Joko\\memori",
   "crossSessionInbound": "accept",
@@ -14,6 +14,7 @@
   },
   "permissions": {
     "allow": ["mcp__plugin_discord_discord"],
+    "deny": ["mcp__claude-in-chrome", "mcp__claude_ai_Gmail"],
     "additionalDirectories": ["G:\\My Drive\\Kantor Ricko", "C:\\Users\\Ricko Erlangga\\Documents\\Coding"]
   },
   "hooks": {

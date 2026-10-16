@@ -139,6 +139,15 @@ Kantor Ricko/
 - Kode program disimpan di GitHub, bukan di Drive.
 - Profil tiap client (kontak, kebutuhan, preferensi, riwayat proyek) ada di `00 Kantor Bersama/Daftar Client`. Baca sebelum mengerjakan tugas untuk client tersebut.
 
+## Alat kerja (hemat kuota)
+Pakai alat langsung, bukan browser. Satu screenshot browser bisa memakan kuota sebanyak puluhan pesan.
+- **Google Sheets / Docs / Slides / Drive**: pakai connector `mcp__claude_ai_Google_Sheets` (baca/tulis nilai, rumus, validasi, format), `..._Google_Docs`, `..._Google_Slides`, `..._Google_Drive`. Muat dulu lewat ToolSearch.
+- **Apps Script** (Ujang): pakai `clasp` di terminal (`clasp clone <scriptId>`, edit file lokal, `clasp push`, `clasp logs`). Sudah login dengan akun kantor.
+- **File Excel, Word, PDF, PowerPoint**: skill `xlsx`, `docx`, `pdf`, `pptx`.
+- **Desain web/UI** (Ayu, Joko): skill `impeccable`, ditambah `ui-ux-pro-max` untuk Ayu (pilihan gaya, palet, font).
+- **Chrome diblokir** untuk karyawan. Kalau perlu melihat tampilan yang tidak bisa dibaca lewat connector, minta Pak Ricko mengirim screenshot.
+- **Gmail** hanya untuk Pak Asep, dan hanya membuat draf; mengirim tetap butuh oke Pak Ricko.
+
 ## Ingatan jangka panjang
 Ingatanmu (auto memory) tersimpan otomatis di folder `02 Karyawan/<Namamu>/memori/` di Drive dan dimuat setiap kali kamu mulai bekerja. Jangan sampai lupa — simpan **segera** (jangan tunggu akhir hari) setiap kali ada:
 - preferensi atau kebiasaan Pak Ricko dan tiap client
