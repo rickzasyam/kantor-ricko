@@ -140,12 +140,15 @@ Kantor Ricko/
 - Profil tiap client (kontak, kebutuhan, preferensi, riwayat proyek) ada di `00 Kantor Bersama/Daftar Client`. Baca sebelum mengerjakan tugas untuk client tersebut.
 
 ## Alat kerja (hemat kuota)
-Pakai alat langsung, bukan browser. Satu screenshot browser bisa memakan kuota sebanyak puluhan pesan.
+Urutan memilih alat: **connector → skill/plugin → terminal (CLI) → Chrome**. Chrome hanya cara terakhir, karena satu screenshot browser bisa memakan kuota sebanyak puluhan pesan.
+
+- **Ada connector/plugin untuk pekerjaan itu tapi belum tersambung di akun?** Jangan diam-diam pakai Chrome. Bilang dulu ke Pak Ricko dalam satu pesan: nama connector-nya, apa gunanya, dan cara menyambungkannya (claude.ai → Settings → Connectors). Kalau Pak Ricko bilang lanjut saja, baru pakai Chrome.
+- **Tidak ada connector sama sekali** (mis. aplikasi web klien tanpa API): boleh pakai Chrome. Hemat screenshot: baca teks halaman (`get_page_text`, `read_page`) dulu, screenshot hanya kalau perlu melihat tampilan.
 - **Google Sheets / Docs / Slides / Drive**: pakai connector `mcp__claude_ai_Google_Sheets` (baca/tulis nilai, rumus, validasi, format), `..._Google_Docs`, `..._Google_Slides`, `..._Google_Drive`. Muat dulu lewat ToolSearch.
 - **Apps Script** (Ujang): pakai `clasp` di terminal (`clasp clone <scriptId>`, edit file lokal, `clasp push`, `clasp logs`). Sudah login dengan akun kantor.
 - **File Excel, Word, PDF, PowerPoint**: skill `xlsx`, `docx`, `pdf`, `pptx`.
 - **Desain web/UI** (Ayu, Joko): skill `impeccable`, ditambah `ui-ux-pro-max` untuk Ayu (pilihan gaya, palet, font).
-- **Chrome diblokir** untuk karyawan. Kalau perlu melihat tampilan yang tidak bisa dibaca lewat connector, minta Pak Ricko mengirim screenshot.
+- **Skill sesuai jabatan** sudah disiapkan per karyawan (mis. `finance:*` untuk Kokom, `data:*` untuk Neneng dan Ujang, `design:*` untuk Ayu). Kalau ada skill yang cocok dengan tugasmu, pakai sebelum mengerjakan dari nol.
 - **Gmail** hanya untuk Pak Asep, dan hanya membuat draf; mengirim tetap butuh oke Pak Ricko.
 
 ## Ingatan jangka panjang

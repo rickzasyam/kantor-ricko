@@ -1,7 +1,10 @@
 {
   "model": "sonnet",
   "effortLevel": "high",
-  "enabledPlugins": { "discord@claude-plugins-official": true, "ponytail@ponytail": false, "impeccable@impeccable": true, "ui-ux-pro-max@ui-ux-pro-max-skill": true },
+  "enabledPlugins": {
+    "discord@claude-plugins-official": true, "ponytail@ponytail": false, "impeccable@impeccable": true, "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+    "pdf-viewer@synced": false, "human-resources@synced": false, "operations@synced": false, "engineering@synced": false, "cowork-plugin-management@synced": false, "data@synced": false, "small-business@synced": false, "customer-support@synced": false, "productivity@synced": false, "finance@synced": false, "product-management@synced": false, "sales@synced": false, "postiz@synced": false, "zoom-plugin@synced": false
+  },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Ayu\\memori",
   "crossSessionInbound": "accept",
@@ -14,7 +17,7 @@
   },
   "permissions": {
     "allow": ["mcp__plugin_discord_discord"],
-    "deny": ["mcp__claude-in-chrome", "mcp__claude_ai_Gmail"],
+    "deny": ["mcp__claude_ai_Gmail"],
     "additionalDirectories": ["G:\\My Drive\\Kantor Ricko", "C:\\Users\\Ricko Erlangga\\Documents\\Coding"]
   },
   "hooks": {

@@ -1,7 +1,10 @@
 {
   "model": "haiku",
   "effortLevel": "high",
-  "enabledPlugins": { "discord@claude-plugins-official": true, "ponytail@ponytail": false },
+  "enabledPlugins": {
+    "discord@claude-plugins-official": true, "ponytail@ponytail": false,
+    "design@synced": false, "pdf-viewer@synced": false, "human-resources@synced": false, "engineering@synced": false, "cowork-plugin-management@synced": false, "marketing@synced": false, "data@synced": false, "customer-support@synced": false, "finance@synced": false, "sales@synced": false, "postiz@synced": false, "zoom-plugin@synced": false, "canva@synced": false
+  },
   "autoMemoryEnabled": true,
   "autoMemoryDirectory": "G:\\My Drive\\Kantor Ricko\\02 Karyawan\\Pak Asep\\memori",
   "crossSessionInbound": "accept",
@@ -14,7 +17,6 @@
   },
   "permissions": {
     "allow": ["mcp__plugin_discord_discord", "Bash(node ../../tools/rapat.mjs *)"],
-    "deny": ["mcp__claude-in-chrome"],
     "additionalDirectories": ["G:\\My Drive\\Kantor Ricko", "C:\\Users\\Ricko Erlangga\\Documents\\Coding"]
   },
   "hooks": {
