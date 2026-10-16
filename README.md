@@ -5,11 +5,11 @@ Enam karyawan AI (Claude Code) yang bekerja lewat Discord, saling berdiskusi lew
 | Karyawan | Role | Nama interkom | Model dasar | Asal |
 |---|---|---|---|---|
 | Pak Asep | Project Manager & Admin (manajer utama) | `pak-asep` | Haiku 5.5 | Sunda (Bandung) |
-| Kokom | Akuntan Senior | `kokom` | Opus 5.5 | Sunda (Garut) |
+| Kokom | Akuntan Senior | `kokom` | Sonnet 5.5 | Sunda (Garut) |
 | Ujang | Spreadsheet & Automation Engineer | `ujang` | Opus 5.5 | Sunda (Sukabumi) |
 | Joko | Full-stack Developer | `joko` | Opus 5.5 | Jawa (Solo) |
 | Neneng | Data Analyst & QA | `neneng` | Sonnet 5.5 | Jawa (Semarang) |
-| Ayu | Designer (UI/UX & Visual) | `ayu` | Sonnet 5.5 | Bali (Denpasar) |
+| Ayu | Designer (UI/UX & Visual) | `ayu` | Opus 5.5 | Bali (Denpasar) |
 
 Tiap karyawan punya kepribadian dan logat daerah ringan (bagian "Siapa kamu" di `karyawan/<id>/CLAUDE.md`), dan ngobrol santai seperti rekan kantor, bukan seperti asisten AI (bagian "Ngobrol seperti orang kantor" di `karyawan/CLAUDE.md`). Dokumen untuk client tetap formal.
 
