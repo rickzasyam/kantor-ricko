@@ -27,6 +27,8 @@
 // 9. Cahaya hangat (cahaya.js): peta cahaya pagi/siang/sore/malam ditumpuk di atas kantor.
 // 11. Kuota & izin (status.js, + siaran di server): panel kuota Claude Pro dan gelembung
 //     "Needs approval" untuk karyawan yang menunggu izin (dari ~/.claude/sessions/*.json).
+// 12. Status kerja & label bahasa Indonesia (status-alat.js): "Using mcp__..." -> "Membaca Google Sheets",
+//     Idle -> "Lagi santai", Needs approval -> "Menunggu izin Pak Ricko".
 //
 // Gaya (dist/webview/assets/index-*.css):
 // 10. Tema antarmuka hangat: variabel warna bawaan (ungu neon) ditimpa arang + aksen matcha.
@@ -98,6 +100,26 @@ const STATUS_SERVER = {
     'st.broadcast({type:"kantorStatus",kuota:k,izin:izin})},3000).unref()})(c);' +
     'let A=t.host==="0.0.0.0"',
 }
+
+// Status kerja dalam bahasa manusia (lihat status-alat.js): `ps` membuat teks status dari nama tool.
+const STATUS_ALAT = {
+  nama: 'status kerja bahasa Indonesia',
+  cari: 'function ps(t,e){return Q?.formatToolStatus(t,e)??`Using ${t}`}',
+  ganti: fs.readFileSync(path.join(HERE, 'status-alat.js'), 'utf8') +
+    '\nfunction ps(t,e){return __kantorStatusAlat(t,e)??Q?.formatToolStatus(t,e)??`Using ${t}`}',
+}
+
+// Jalur kedua: kalau hook pixel-agents ("Instant Detection") aktif, status dibuat di handlePreToolUse.
+const STATUS_ALAT_HOOK = {
+  nama: 'status kerja bahasa Indonesia (hook)',
+  cari: 'i=this.provider.formatToolStatus(o,r),a=`hook-',
+  ganti: 'i=__kantorStatusAlat(o,r)??this.provider.formatToolStatus(o,r),a=`hook-',
+}
+
+// Label status di atas karakter dalam bahasa Indonesia (`semua`: ganti setiap kemunculan).
+const LABEL_SANTAI = { nama: 'label Idle', cari: 'return`Idle`}', ganti: 'return`Lagi santai`}' }
+const LABEL_IZIN = { nama: 'label Needs approval', cari: '`Needs approval`', ganti: '`Menunggu izin Pak Ricko`', semua: true }
+const LABEL_JAWABAN = { nama: 'label Waiting for input', cari: '`Waiting for input`', ganti: '`Menunggu jawaban`', semua: true }
 
 const STATUS_TERIMA = {
   nama: 'terima kuota & izin',
@@ -308,8 +330,8 @@ function bundelTampilan(ekstensi = 'js') {
 }
 
 const TARGET = [
-  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER, STATUS_SERVER] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, STATUS_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR, STATUS_FUNGSI] },
+  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER, STATUS_SERVER, STATUS_ALAT, STATUS_ALAT_HOOK] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, STATUS_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR, STATUS_FUNGSI, LABEL_SANTAI, LABEL_IZIN, LABEL_JAWABAN] },
   { file: bundelTampilan('css'), penanda: '--kantor-tema', patches: [], tambahan: TEMA_CSS },
 ]
 
@@ -327,11 +349,11 @@ for (const { file, penanda, patches, tambahan } of TARGET) {
   let js = fs.readFileSync(asli, 'utf8')
   for (const p of patches) {
     const jumlah = js.split(p.cari).length - 1
-    if (jumlah !== 1) {
+    if (p.semua ? jumlah < 1 : jumlah !== 1) {
       console.error(`pixel-agents ${versi}: titik patch "${p.nama}" ditemukan ${jumlah}x di ${path.basename(file)} (harus 1). Versi berubah? Patch dibatalkan.`)
       process.exit(1)
     }
-    js = js.replace(p.cari, () => p.ganti)
+    js = p.semua ? js.split(p.cari).join(p.ganti) : js.replace(p.cari, () => p.ganti)
   }
   if (tambahan) js += tambahan
   fs.writeFileSync(file, js)
