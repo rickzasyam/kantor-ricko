@@ -56,7 +56,8 @@ pixel-office/
   layout.mjs                denah kantor 50x36 (9 ruangan) + cek semua kursi bisa didatangi
   aktivitas.js              aktivitas karyawan saat menganggur (disuntikkan ke pixel-agents)
   cahaya.js                 cahaya hangat pagi/siang/sore/malam (disuntikkan ke pixel-agents)
-  status.js                 panel kuota + gelembung "Needs approval" (disuntikkan ke pixel-agents)
+  status.js                 panel kuota + gelembung "Menunggu izin" (disuntikkan ke pixel-agents)
+  status-alat.js            status kerja bahasa manusia, mis. "Membaca Google Sheets" (disuntikkan ke server)
   patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien, aktivitas, cahaya, tema warna)
   aset/                     hasil bangun: folder aset tambahan untuk pixel-agents (tidak disimpan di git)
 ```
