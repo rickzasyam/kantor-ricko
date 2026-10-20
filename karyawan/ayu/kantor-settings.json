@@ -13,7 +13,7 @@
   "env": {
     "DISCORD_STATE_DIR": "C:\\Users\\Ricko Erlangga\\.claude\\channels\\kantor-ricko\\ayu",
     "CLAUDE_CODE_AUTO_COMPACT_WINDOW": "200000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "60",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "85",
     "CLAUDE_CODE_RETRY_WATCHDOG": "1",
     "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION": "false"
   },

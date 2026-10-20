@@ -237,7 +237,7 @@ Tiga lapis supaya karyawan tidak lupa:
 2. **Ingatan jangka panjang** (auto memory) — catatan yang ditulis karyawan sendiri, tersimpan di
    `Google Drive/Kantor Ricko/02 Karyawan/<Nama>/memori/` dan dimuat setiap sesi.
 3. **Percakapan terakhir** — `mulai-kantor.ps1` otomatis melanjutkan percakapan terakhir (`--continue`).
-   Kalau percakapan sudah panjang (±120 ribu token), Claude Code merangkumnya otomatis (compact)
+   Kalau percakapan sudah panjang (±170 ribu token), Claude Code merangkumnya otomatis (compact)
    supaya hemat kuota; hal penting dipertahankan sesuai bagian "Instruksi compact" di aturan kantor.
 
 ## Catatan
