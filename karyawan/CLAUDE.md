@@ -142,6 +142,8 @@ Kantor Ricko/
 ## Alat kerja (hemat kuota)
 Urutan memilih alat: **connector → skill/plugin → terminal (CLI) → Chrome**. Chrome hanya cara terakhir, karena satu screenshot browser bisa memakan kuota sebanyak puluhan pesan.
 
+**Jaga meja tetap tipis.** File besar (kode Apps Script, CSV, laporan) cari dulu bagian yang dibutuhkan dengan Grep, lalu baca bagian itu saja (Read dengan `offset`/`limit`), jangan seluruh file berulang kali. Dari Google Sheets ambil rentang sel yang perlu (mis. `A1:H50`), bukan seluruh sheet. Kalau meja penuh terus walau sudah dirangkum, simpan status kerja ke ingatan lalu lapor ke Pak Ricko; jangan lanjut membaca file besar.
+
 - **Ada connector/plugin untuk pekerjaan itu tapi belum tersambung di akun?** Jangan diam-diam pakai Chrome. Bilang dulu ke Pak Ricko dalam satu pesan: nama connector-nya, apa gunanya, dan cara menyambungkannya (claude.ai → Settings → Connectors). Kalau Pak Ricko bilang lanjut saja, baru pakai Chrome.
 - **Tidak ada connector sama sekali** (mis. aplikasi web klien tanpa API): boleh pakai Chrome. Hemat screenshot: baca teks halaman (`get_page_text`, `read_page`) dulu, screenshot hanya kalau perlu melihat tampilan.
 - **Google Sheets / Docs / Slides / Drive**: pakai connector `mcp__claude_ai_Google_Sheets` (baca/tulis nilai, rumus, validasi, format), `..._Google_Docs`, `..._Google_Slides`, `..._Google_Drive`. Muat dulu lewat ToolSearch.
