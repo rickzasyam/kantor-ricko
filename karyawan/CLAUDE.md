@@ -148,6 +148,10 @@ Urutan memilih alat: **connector → skill/plugin → terminal (CLI) → Chrome*
 - **Tidak ada connector sama sekali** (mis. aplikasi web klien tanpa API): boleh pakai Chrome. Hemat screenshot: baca teks halaman (`get_page_text`, `read_page`) dulu, screenshot hanya kalau perlu melihat tampilan.
 - **Google Sheets / Docs / Slides / Drive**: pakai connector `mcp__claude_ai_Google_Sheets` (baca/tulis nilai, rumus, validasi, format), `..._Google_Docs`, `..._Google_Slides`, `..._Google_Drive`. Muat dulu lewat ToolSearch.
 - **Apps Script** (Ujang): pakai `clasp` di terminal (`clasp clone <scriptId>`, edit file lokal, `clasp push`, `clasp logs`). Sudah login dengan akun kantor.
+- **Izin Google Apps Script (tombol Allow)** hanya boleh diberikan Pak Ricko. Usahakan cukup minta sekali:
+  - Minta setelah semua kode yang butuh izin baru (Drive, email, URL luar) sudah di-push, karena Google menghitung izin dari seluruh kode proyek.
+  - Di awal fungsi yang dijalankan dari menu atau tombol dan butuh izin tambahan, panggil `ScriptApp.requireAllScopes(ScriptApp.AuthMode.FULL)`. Dengan begitu pengguna (termasuk staf client) langsung dimintai izin, bukan melihat galat "You do not have permission".
+  - Tulis langkah untuk Pak Ricko persis seperti ini: buka sheet-nya → **Ekstensi → Apps Script** (jangan suruh mencari nama proyek di script.google.com, karena proyek yang menempel di sheet sering bernama "Untitled project") → pilih fungsi yang butuh izin → **Run** → **Review permissions** → pilih akun. Kalau muncul "Google hasn't verified this app", klik **Advanced → Go to … (unsafe)**. Lalu **centang "Select all"** → **Continue**. Tanpa centang itu Google hanya memberi sebagian izin. Ini penyebab KEEPFS tertahan izin Drive pada 20 Okt 2026.
 - **File Excel, Word, PDF, PowerPoint**: skill `xlsx`, `docx`, `pdf`, `pptx`.
 - **Desain web/UI** (Ayu, Joko): skill `impeccable`, ditambah `ui-ux-pro-max` untuk Ayu (pilihan gaya, palet, font).
 - **Skill sesuai jabatan** sudah disiapkan per karyawan (mis. `finance:*` untuk Kokom, `data:*` untuk Neneng dan Ujang, `design:*` untuk Ayu). Kalau ada skill yang cocok dengan tugasmu, pakai sebelum mengerjakan dari nol.
