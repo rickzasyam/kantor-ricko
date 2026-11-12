@@ -34,7 +34,9 @@ tools/
   kantor-umum.ps1           fungsi bersama script kantor
   pasang-shortcut.ps1       autostart Windows + ikon desktop (-Hapus untuk melepas)
   update-kantor.ps1         ambil perubahan dari GitHub lalu terapkan (ikon Update Kantor)
-  interkom-log.mjs          salin pesan interkom ke #ruang-rapat
+  buka-ulang-karyawan.ps1   buka ulang satu karyawan yang menganggur (tombol "Save & restart" di dashboard Staff)
+  jobdesk.mjs               hook SessionStart: bacakan job desk tambahan dari dashboard Staff ke karyawan
+  interkom-log.mjs          salin pesan interkom ke #ruang-rapat + catat ringkasannya untuk animasi Pixel Office
   alarm-gagal.mjs           alarm di Discord saat karyawan gagal bekerja (login kedaluwarsa, kuota habis) atau menunggu izin
   status-kantor.mjs         status line karyawan: simpan pemakaian kuota Claude untuk panel Pixel Office
   rapat.mjs                 mode rapat: karakter peserta berkumpul di Ruang Rapat Pixel Office
@@ -50,15 +52,19 @@ pixel-office/
     matcha.mjs              Matcha Bar: konter, alat teh, rak keramik, lampu gantung, bangku bar
     main.mjs                ruang game & dojo
     taman.mjs               taman onsen: kolam, bambu, momiji, lentera batu, shishi-odoshi
+    mess.mjs                Mess: futon enam warna (satu per karyawan)
   lib/                      sprite.mjs (kanvas piksel) + bahan.mjs (palet & bahan: kayu, batu, kain, daun, huruf)
   lantai.mjs                pola lantai (kayu, tatami, batu, kerikil, lumut, dek) + dinding plester berbalok kayu
   karakter.mjs              karakter tetap per karyawan + 2 karakter kustom (Ayu, Ricko)
-  layout.mjs                denah kantor 50x36 (9 ruangan) + cek semua kursi bisa didatangi
-  aktivitas.js              aktivitas karyawan saat menganggur (disuntikkan ke pixel-agents)
+  layout.mjs                denah kantor 61x36 (10 ruangan) + cek semua kursi & futon bisa didatangi
+  tiga-d.js                 tampilan 2.5D dengan Three.js: lantai & dinding 3D, furnitur & karakter berdiri (disuntikkan ke pixel-agents)
+  dasbor.js                 bilah tombol + jendela STAFF bergaya game: model AI & job desk tiap karyawan (disuntikkan ke pixel-agents)
+  server-kantor.js          API dashboard Staff + siaran interkom (disuntikkan ke server pixel-agents)
+  aktivitas.js              aktivitas karyawan saat menganggur, jalan ke rekan saat interkom, tidur saat kuota habis (disuntikkan ke pixel-agents)
   cahaya.js                 cahaya hangat pagi/siang/sore/malam (disuntikkan ke pixel-agents)
-  status.js                 panel kuota + gelembung "Menunggu izin" (disuntikkan ke pixel-agents)
-  status-alat.js            status kerja bahasa manusia, mis. "Membaca Google Sheets" (disuntikkan ke server)
-  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien, aktivitas, cahaya, tema warna)
+  status.js                 panel kuota + gelembung "Needs approval" + gelembung obrolan interkom (disuntikkan ke pixel-agents)
+  status-alat.js            status kerja bahasa manusia, mis. "Reading Google Sheets" (disuntikkan ke server)
+  patch-pixel-agents.mjs    patch pixel-agents 1.4.1 (karakter tetap, pulihkan karyawan, mode rapat, animasi ambien, aktivitas, cahaya, tema warna, 3D, dashboard)
   aset/                     hasil bangun: folder aset tambahan untuk pixel-agents (tidak disimpan di git)
 ```
 
@@ -150,6 +156,10 @@ Aturannya ada di bagian "Kerja mandiri sampai beres" di `karyawan/CLAUDE.md`.
 
 Gaya **kantor Jepang yang hangat** (Japandi): dinding plester krem berbalok kayu, lantai oak, tatami, batu, dan kerikil; furnitur kayu, rotan, linen, keramik, dan bambu; bonsai, ranting kering, lukisan tinta. Warnanya kalem (krem, pasir, sage, cokelat tanah, arang lembut), tanpa neon. Sentuhan jenaka tetap ada: kapibara berendam di onsen, daruma, maneki-neko, gachapon, poster kucing.
 
+![Kantor Ricko tampilan 2.5D](pixel-office/pratinjau-3d.jpg)
+
+**Tampilan 2.5D.** Kantor digambar dengan Three.js sebagai diorama: lantai dan dinding benar-benar 3D (dinding punya tebal dan tinggi, ada perspektif), sedangkan furnitur dan karakter tetap gambar piksel yang berdiri menghadap kamera. Bilah tombol di kiri atas: **STAFF** (dashboard karyawan), **VIEW: 3D / 2D** (ganti ke tampilan datar lama), dan dua tombol putar kamera (atau tombol keyboard **Q** / **E**; klik dua kali untuk meluruskan). Zoom dan geser tetap seperti biasa. Editor **Layout** otomatis memakai tampilan 2D. Kalau browser tidak mendukung WebGL, tampilan kembali ke 2D sendiri. Semua teks antarmuka berbahasa Inggris; isi obrolan karyawan apa adanya.
+
 | Ruangan | Isi | Yang duduk |
 |---|---|---|
 | Ruang Ricko | meja eksekutif oak + kursi rotan, bufet berlampu bola, vas ranting kering, akuarium aquascape, lukisan tinta, pojok baca | Ricko |
@@ -161,6 +171,8 @@ Gaya **kantor Jepang yang hangat** (Japandi): dinding plester krem berbalok kayu
 | Ruang Game | kotatsu + zaisu di depan TV game, 2 mesin arcade kayu, gachapon, biliar flanel sage, foosball, lampion untai, pojok bean bag | - |
 | Dojo | lantai tatami, treadmill, rak dumbel, bench, samsak, rak bokken, matras yoga, zabuton meditasi | - |
 | Onsen | kolam air panas bertepi batu alam (uap, riak, pancuran bambu, kapibara berendam), dek kayu, bambu, momiji, pinus, lentera batu, shishi-odoshi, taman kerikil karesansui, batu pijakan, payung wagasa | - |
+
+| Mess | kamar istirahat di sayap timur (pintu dari Ruang Game): tatami, enam futon berwarna (satu per karyawan), lampu kertas, jendela bundar | - (tempat tidur saat kuota habis) |
 
 **Cahaya & waktu.** Di atas gambar kantor ada lapisan cahaya hangat yang mengikuti jam PC: pagi dan siang terang lembut dengan sinar matahari dari jendela shoji, sore keemasan, malam redup dengan pendar lampu kertas, lentera, dan jendela. Untuk mencoba waktu lain, buka console browser (F12) lalu ketik `window.__kantorWaktu = 'malam'` (atau `pagi` / `siang` / `sore`); mematikan cahaya: `window.__kantorCahaya = false`. Pengaturannya di `pixel-office/cahaya.js`.
 
@@ -188,6 +200,22 @@ Aturan dan gambarnya ada di `pixel-office/aktivitas.js` (bobot tiap aktivitas di
 ![Taman onsen beranimasi](pixel-office/pratinjau-onsen.gif)
 
 **Kuota & izin.** Panel di pojok kanan atas menampilkan pemakaian Claude Pro: limit 5 jam dan mingguan (hijau di bawah 60%, kuning sampai 85%, merah di atasnya) beserta jam reset-nya. Klik panel untuk mengecilkannya. Angkanya diperbarui setiap ada karyawan yang selesai menjawab, jadi waktu kantor sepi angkanya bisa beberapa jam lalu. Karyawan yang menunggu izin Pak Ricko mendapat gelembung **Needs approval** di atas kepalanya, diambil dari status asli Claude Code.
+
+**Tidur saat kuota habis.** Begitu limit 5 jam atau mingguan mencapai 100%, semua karyawan berjalan ke futon masing-masing di Mess dan tidur (huruf "z" naik pelan) sampai jam reset, lalu bangun dan kembali bekerja sendiri. Semua karyawan memakai satu akun Claude, jadi mereka tidur dan bangun bersamaan. Futon ke-n di denah (jenis `FUTON_*`) milik karyawan ke-n di `tools/karyawan.json`. Mencoba dari console browser: `window.__kantorTidurPaksa = true`.
+
+![Karyawan tidur di Mess](pixel-office/pratinjau-mess.jpg)
+
+**Interkom.** Saat seorang karyawan mengirim pesan interkom, karakternya berjalan ke rekan yang dituju dan gelembung obrolan kecil muncul di atas kepalanya berisi ringkasan satu kalimat (mis. *Ujang → Kokom: Teh Kokom, minta aturan lembur...*). Percakapan lengkapnya tetap di Discord `#ruang-rapat`. Ringkasan dibuat script biasa (kalimat pertama pesan), tidak memakai kuota Claude.
+
+**Dashboard STAFF.** Tombol **STAFF** membuka layar status bergaya game: potret karyawan di kiri (status, batang ENERGY = sisa kuota 5 jam, FOCUS = sisa ruang konteks), pengaturan di kanan:
+
+- **AI MODEL**: pilih model tiap karyawan. Daftarnya otomatis: keluarga model (`Opus (latest)` selalu berarti Opus terbaru, dst.) ditambah model yang dikenal Claude Code di PC ini, jadi model baru dari Anthropic muncul sendiri setelah Claude Code memperbarui dirinya.
+- **JOB DESK**: daftar tugas tetap tambahan (di samping job description di `karyawan/<id>/CLAUDE.md`), dibacakan ke karyawan setiap sesinya dibuka.
+- **Save** menyimpan saja; **Save & restart** juga membuka ulang karyawan itu kalau sedang menganggur (yang sedang bekerja tidak diganggu). Pengaturan baru berlaku setelah karyawan dibuka ulang.
+
+![Dashboard STAFF](pixel-office/pratinjau-staff.jpg)
+
+Pilihan dashboard disimpan di `%USERPROFILE%\.pixel-agents\kantor-karyawan.json` (di luar repo, supaya Update Kantor tidak terhalang) dan mengalahkan `model` di `kantor-settings.json`.
 
 Label di atas karakter menampilkan status, nama, dan jabatan (mis. *Pak Asep — Manager*). Nama dan jabatan diambil dari `tools/karyawan.json` (kolom `nama`, `jabatan`); setelah diubah jalankan `.\tools\pasang-pixel-office.ps1` lalu muat ulang browser.
 

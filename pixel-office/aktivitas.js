@@ -4,6 +4,8 @@
 // biliar, arcade, foosball, lari di treadmill, angkat dumbel, tinju samsak, rebahan di bean bag
 // sambil main HP, minum teh di zabuton dekat chabudai, bermeditasi di dojo, atau duduk di bangku
 // nodate taman.
+// Dua perilaku lain mengalahkan aktivitas santai: mendatangi rekan saat mengirim interkom, dan
+// tidur di futon Mess saat kuota Claude habis (lihat bagian "interkom & tidur").
 //
 // Nama hasil minify yang dipakai (hanya berlaku untuk 1.4.1):
 //   R  = state karakter (R.IDLE, R.WALK, R.TYPE)      z  = arah hadap (z.DOWN, z.UP, z.LEFT, z.RIGHT)
@@ -176,6 +178,9 @@ function __kantorJalan(ch, jalur) {
 /** Dipanggil tiap frame per karakter. true = logika bawaan dilewati. */
 function __kantorAktivitas(os, ch, dt) {
   if (ch.isSubagent || ch.matrixEffect) return false
+  // Interkom (jalan ke rekan) dan tidur (kuota habis) punya aturan sendiri dan mengalahkan aktivitas santai.
+  var khusus = __kantorKhusus(os, ch, dt)
+  if (khusus !== undefined) return khusus
   var a = ch.__akt
   if (a && (ch.isActive || __kantorIkutRapat(ch) || a.layout !== os.layout)) {
     __kantorSelesai(os, ch, 10, 30)
@@ -239,6 +244,136 @@ function __kantorAktivitas(os, ch, dt) {
     __kantorSelesai(os, ch, 30, 80)
     return false
   }
+  return false
+}
+
+// ----------------------------------------------------------------------- interkom & tidur
+//
+// Interkom: status.js mengisi window.__kantorInterkomAntre dengan { dari, ke, teks } tiap ada pesan
+// antar-karyawan. Pengirim berjalan ke samping penerima, gelembung obrolan (digambar status.js)
+// muncul beberapa detik, lalu ia kembali ke pekerjaannya. Berlaku juga saat ia sedang bekerja.
+//
+// Tidur: selama window.__kantorTidur (kuota Claude habis, lihat status.js) karyawan yang tidak
+// bekerja berjalan ke futon miliknya di Mess dan tidur sampai kuota pulih. Futon ke-n di denah
+// (jenis FUTON_*) milik karyawan ke-n di tools/karyawan.json (window.__kantorUrutan).
+
+function __kantorCariKaryawan(os, nama) {
+  var hasil = null
+  os.characters.forEach(function (c) { if (!c.isSubagent && String(c.folderName || '').toLowerCase() === nama) hasil = c })
+  return hasil
+}
+
+/** Tile terdekat dari daftar calon [kolom, baris] yang bisa didatangi: { t, j: jalur } atau null. */
+function __kantorDekat(os, ch, calon) {
+  var terbaik = null
+  calon.forEach(function (t) {
+    var diSini = t[0] === ch.tileCol && t[1] === ch.tileRow
+    if (!diSini && !Oi(t[0], t[1], os.tileMap, os.blockedTiles)) return
+    var j = diSini ? [] : os.withOwnSeatUnblocked(ch, function () { return Ai(ch.tileCol, ch.tileRow, t[0], t[1], os.tileMap, os.blockedTiles) })
+    if (!diSini && !j.length) return
+    if (!terbaik || j.length < terbaik.j.length) terbaik = { t: t, j: j }
+  })
+  return terbaik
+}
+
+/** Jalan menyusuri ch.path tanpa logika bawaan (yang menarik karyawan aktif ke kursinya). true = sampai. */
+function __kantorLangkah(ch, dt) {
+  ch.state = R.WALK
+  ch.frameTimer += dt
+  if (ch.frameTimer >= 0.15) { ch.frameTimer -= 0.15; ch.frame = (ch.frame + 1) % 4 }
+  var n = ch.path[0]
+  if (!n) return true
+  ch.dir = Li(ch.tileCol, ch.tileRow, n.col, n.row)
+  ch.moveProgress += 3 * dt
+  var o = Ii(ch.tileCol, ch.tileRow), s = Ii(n.col, n.row), k = Math.min(ch.moveProgress, 1)
+  ch.x = o.x + (s.x - o.x) * k; ch.y = o.y + (s.y - o.y) * k
+  if (ch.moveProgress >= 1) { ch.tileCol = n.col; ch.tileRow = n.row; ch.x = s.x; ch.y = s.y; ch.path.shift(); ch.moveProgress = 0 }
+  return !ch.path.length
+}
+
+function __kantorMulaiInterkom(os, ch, pesan) {
+  var a = ch.__akt = { jenis: 'interkom', fase: 'jalan', t: 0, anim: 0, layout: os.layout, kunci: 'interkom' + ch.id, teks: pesan.teks, ke: pesan.ke, durasi: 7 }
+  var tujuan = __kantorCariKaryawan(os, pesan.ke)
+  var dekat = null
+  if (tujuan && tujuan !== ch && !__kantorIkutRapat(ch)) {
+    var c = tujuan.tileCol, r = tujuan.tileRow
+    dekat = __kantorDekat(os, ch, [[c - 1, r], [c + 1, r], [c, r + 1], [c, r - 1]])
+  }
+  if (dekat) {
+    a.hadap = tujuan.id
+    ch.path = dekat.j; ch.moveProgress = 0; ch.frame = 0; ch.frameTimer = 0
+  } else {
+    // Penerima tidak ada di kantor / tidak bisa didatangi / sedang rapat: bicara dari tempatnya.
+    a.fase = 'bicara'; a.diTempat = true
+  }
+  return a
+}
+
+function __kantorKasur(os, nama) {
+  var i = (window.__kantorUrutan || []).indexOf(nama)
+  if (i < 0) return null
+  return os.layout.furniture.filter(function (f) { return /^FUTON/.test(f.type) })[i] || null
+}
+
+/** true/false = frame ini sudah ditangani (lewati / jalankan logika bawaan); undefined = bukan urusan sini. */
+function __kantorKhusus(os, ch, dt) {
+  var a = ch.__akt
+  var nama = String(ch.folderName || '').toLowerCase()
+
+  if (!a || a.jenis !== 'interkom') {
+    var antre = window.__kantorInterkomAntre
+    var ke = antre ? antre.findIndex(function (p) { return p.dari === nama }) : -1
+    if (ke >= 0) {
+      var pesan = antre.splice(ke, 1)[0]
+      if (a) __kantorSelesai(os, ch, 5, 15)
+      a = __kantorMulaiInterkom(os, ch, pesan)
+    }
+  }
+  if (a && a.jenis === 'interkom') {
+    a.anim += dt
+    if (a.layout !== os.layout) { ch.__akt = null; return false }
+    if (a.fase === 'jalan') {
+      if (!__kantorLangkah(ch, dt)) return true
+      a.fase = 'bicara'; a.t = 0
+      ch.state = R.IDLE; ch.frame = 0; ch.frameTimer = 0
+      var lawan = os.characters.get(a.hadap)
+      if (lawan) {
+        var dx = lawan.x - ch.x, dy = lawan.y - ch.y
+        ch.dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? z.RIGHT : z.LEFT) : (dy > 0 ? z.DOWN : z.UP)
+      }
+      return true
+    }
+    a.t += dt
+    if (a.t < a.durasi) return !a.diTempat
+    ch.__akt = null
+    ch.__aktJeda = Vi(15, 40)
+    if (!a.diTempat) { ch.state = R.IDLE; ch.wanderTimer = Vi(1, 3) }   // logika bawaan mengantarnya kembali ke kursi
+    return false
+  }
+
+  var tidur = !!window.__kantorTidur && !ch.isActive && !__kantorIkutRapat(ch)
+  if (a && a.jenis === 'tidur') {
+    a.anim += dt
+    if (!tidur || a.layout !== os.layout) { __kantorSelesai(os, ch, 20, 60); return false }
+    if (a.fase === 'jalan') {
+      if (ch.state === R.WALK) return false
+      if (ch.tileCol !== a.jalan[0] || ch.tileRow !== a.jalan[1]) { ch.__akt = null; ch.__tidurCoba = 5; return false }
+      a.fase = 'main'
+      ch.state = R.IDLE; ch.path = []; ch.frame = 0
+    }
+    a.t += dt
+    ch.dir = z.DOWN
+    ch.x = a.f.col * 16 + 8; ch.y = a.f.row * 16 + 10    // kepala di bantal (tile atas futon)
+    return true
+  }
+  if (!tidur) return undefined
+  if (ch.__tidurCoba > 0) { ch.__tidurCoba -= dt; return undefined }
+  var f = __kantorKasur(os, nama)
+  var dekat = f && __kantorDekat(os, ch, [[f.col - 1, f.row + 1], [f.col + 1, f.row + 1], [f.col, f.row + 2], [f.col - 1, f.row], [f.col + 1, f.row], [f.col, f.row - 1]])
+  if (!dekat) { ch.__tidurCoba = 10; return undefined }   // tidak punya futon (mis. Pak Ricko) / jalannya tertutup
+  if (a) __kantorSelesai(os, ch, 0, 0)
+  ch.__akt = { jenis: 'tidur', fase: 'jalan', t: 0, anim: 0, layout: os.layout, kunci: 'tidur' + ch.id, jalan: dekat.t, f: f }
+  if (dekat.j.length) __kantorJalan(ch, dekat.j)
   return false
 }
 
@@ -464,6 +599,22 @@ function __kantorGambar(l, ch, a, r, i) {
     case 'bangku':
       minumDuduk(12, z.DOWN)
       break
+    case 'tidur': {
+      // Rebah di futon: hanya kepala yang tampak di atas bantal (badan tertutup selimut, bagian
+      // dari gambar futon), huruf "z" naik pelan.
+      var kepala = ni(S.walk[z.DOWN][1], a)
+      var kx = Math.round(r + (ch.x - 8) * a), ky = Math.round(i + (ch.y - 10) * a)
+      gambar.push(function (ctx) { ctx.drawImage(kepala, 0, 2 * a, kepala.width, 14 * a, kx, ky, kepala.width, 14 * a) })
+      tambahan = function (ctx) {
+        for (var q = 0; q < 3; q++) {
+          var u = (akt.anim * 0.35 + q / 3) % 1, w = 'rgba(246,238,223,' + (0.9 * (1 - u)).toFixed(2) + ')'
+          var zx = ch.x + 7 + u * 7, zy = ch.y - 8 - u * 16
+          kotak(ctx, zx, zy, 3, 1, w); kotak(ctx, zx + 1, zy + 1, 1, 1, w); kotak(ctx, zx, zy + 2, 3, 1, w)
+        }
+      }
+      zY = (akt.f.row + 2) * 16 + 1
+      break
+    }
     case 'meditasi': {
       // duduk bersila diam; sesekali napas panjang (badan naik sedikit)
       var napas = Math.sin(akt.anim * 0.8) > 0.6 ? 1 : 0

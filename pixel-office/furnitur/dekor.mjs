@@ -436,7 +436,7 @@ export const SINGLE = [
   ['RAK_DINDING', 'Rak Dinding', 'wall', rakDinding, 2, 2, 0, { walls: true }],
   ['PAPAN_WASHI', 'Papan Washi', 'wall', papanWashi, 3, 2, 0, { walls: true }],
   ['TV_RAPAT', 'TV Presentasi Kayu', 'wall', tvRapat, 3, 2, 0, { walls: true }],
-  ...['RICKO', 'FOKUS', 'MATCHA', 'MAIN', 'DOJO', 'ONSEN', 'RAPAT'].map(t => {
+  ...['RICKO', 'FOKUS', 'MATCHA', 'MAIN', 'DOJO', 'ONSEN', 'RAPAT', 'MESS'].map(t => {
     const g = plakat(t)
     return [`PLAKAT_${t}`, `Papan Nama ${t}`, 'wall', g, g().w / 16, 2, 0, { walls: true }]
   }),

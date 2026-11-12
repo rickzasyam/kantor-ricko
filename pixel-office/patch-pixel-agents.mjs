@@ -27,8 +27,14 @@
 // 9. Cahaya hangat (cahaya.js): peta cahaya pagi/siang/sore/malam ditumpuk di atas kantor.
 // 11. Kuota & izin (status.js, + siaran di server): panel kuota Claude Pro dan gelembung
 //     "Needs approval" untuk karyawan yang menunggu izin (dari ~/.claude/sessions/*.json).
-// 12. Status kerja & label bahasa Indonesia (status-alat.js): "Using mcp__..." -> "Membaca Google Sheets",
-//     Idle -> "Lagi santai", Needs approval -> "Menunggu izin Pak Ricko".
+// 12. Status kerja bahasa manusia (status-alat.js): "Using mcp__..." -> "Reading Google Sheets".
+//     Semua teks antarmuka berbahasa Inggris; isi obrolan karyawan apa adanya.
+// 13. Tampilan 2.5D Three.js (tiga-d.js): lantai & dinding 3D, furnitur & karakter berdiri sebagai
+//     kartu piksel. Three.js disalin dari node_modules/three ke samping bundel tampilan.
+// 14. Dashboard bergaya game (dasbor.js + server-kantor.js): jendela STAFF untuk memilih model AI
+//     dan mengatur job desk tiap karyawan, ganti tampilan 3D/2D, putar kamera.
+// 15. Interkom & tidur (aktivitas.js + status.js): pengirim interkom berjalan ke penerima dengan
+//     gelembung obrolan; saat kuota habis karyawan tidur di futonnya di Mess.
 //
 // Gaya (dist/webview/assets/index-*.css):
 // 10. Tema antarmuka hangat: variabel warna bawaan (ungu neon) ditimpa arang + aksen matcha.
@@ -49,6 +55,12 @@ function bacaProfil() {
   const profil = { ...PROFIL_LAIN }
   for (const k of roster) profil[k.id.split('-').pop().toLowerCase()] = { nama: k.nama, jabatan: k.jabatan ?? k.role }
   return profil
+}
+
+// Nama folder sesi karyawan menurut urutan tools/karyawan.json: futon ke-n di Mess milik karyawan ke-n.
+function bacaUrutan() {
+  const roster = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'tools', 'karyawan.json'), 'utf8'))
+  return roster.map(k => k.id.split('-').pop().toLowerCase())
 }
 
 const KARAKTER_TETAP = {
@@ -103,7 +115,7 @@ const STATUS_SERVER = {
 
 // Status kerja dalam bahasa manusia (lihat status-alat.js): `ps` membuat teks status dari nama tool.
 const STATUS_ALAT = {
-  nama: 'status kerja bahasa Indonesia',
+  nama: 'status kerja bahasa manusia',
   cari: 'function ps(t,e){return Q?.formatToolStatus(t,e)??`Using ${t}`}',
   ganti: fs.readFileSync(path.join(HERE, 'status-alat.js'), 'utf8') +
     '\nfunction ps(t,e){return __kantorStatusAlat(t,e)??Q?.formatToolStatus(t,e)??`Using ${t}`}',
@@ -111,20 +123,15 @@ const STATUS_ALAT = {
 
 // Jalur kedua: kalau hook pixel-agents ("Instant Detection") aktif, status dibuat di handlePreToolUse.
 const STATUS_ALAT_HOOK = {
-  nama: 'status kerja bahasa Indonesia (hook)',
+  nama: 'status kerja bahasa manusia (hook)',
   cari: 'i=this.provider.formatToolStatus(o,r),a=`hook-',
   ganti: 'i=__kantorStatusAlat(o,r)??this.provider.formatToolStatus(o,r),a=`hook-',
 }
 
-// Label status di atas karakter dalam bahasa Indonesia (`semua`: ganti setiap kemunculan).
-const LABEL_SANTAI = { nama: 'label Idle', cari: 'return`Idle`}', ganti: 'return`Lagi santai`}' }
-const LABEL_IZIN = { nama: 'label Needs approval', cari: '`Needs approval`', ganti: '`Menunggu izin Pak Ricko`', semua: true }
-const LABEL_JAWABAN = { nama: 'label Waiting for input', cari: '`Waiting for input`', ganti: '`Menunggu jawaban`', semua: true }
-
 const STATUS_TERIMA = {
-  nama: 'terima kuota & izin',
+  nama: 'terima kuota, izin & interkom',
   cari: 's.type===`kantorRapat`){',
-  ganti: 's.type===`kantorStatus`){__kantorStatus(s,lo,nn)}else if(s.type===`kantorRapat`){',
+  ganti: 's.type===`kantorStatus`){__kantorStatus(s,lo,nn)}else if(s.type===`kantorInterkom`){__kantorInterkom(s)}else if(s.type===`kantorRapat`){',
 }
 
 const STATUS_FUNGSI = {
@@ -144,7 +151,7 @@ const RAPAT_TAMPILAN = {
   nama: 'karakter berkumpul di ruang rapat',
   cari: 'var lo={current:null},U=new Pa;g&&co(lo);',
   ganti: 'var lo={current:null},U=new Pa;g&&co(lo);__kantorRapatMulai(lo);' +
-    `window.__kantorProfil=${JSON.stringify(bacaProfil())};` + `
+    `window.__kantorProfil=${JSON.stringify(bacaProfil())};window.__kantorUrutan=${JSON.stringify(bacaUrutan())};` + `
 function __kantorRapatMulai(ref){
   if(typeof window==="undefined")return;
   window.__kantorOffice=ref;
@@ -306,6 +313,51 @@ const CAHAYA_GAMBAR = {
   ganti: 'y??[]),__kantorCahaya(e,S,C,o),va(e,a,S,C,o)',
 }
 
+// Tampilan 2.5D dengan Three.js (lihat tiga-d.js). Renderer 2D (`ba`) menyerahkan frame ke
+// __kantor3DGambar tepat setelah kanvas dikosongkan; kalau 3D tidak aktif ia menggambar 2D seperti biasa.
+// Label nama (`f`,`g` = posisi layar) dan posisi mouse ikut proyeksi kamera 3D.
+const TIGA_D_FUNGSI = {
+  nama: 'tampilan 3D (fungsi)',
+  cari: 'var oo=class{layout;',
+  ganti: fs.readFileSync(path.join(HERE, 'tiga-d.js'), 'utf8') + '\nvar oo=class{layout;',
+}
+const TIGA_D_GAMBAR = {
+  nama: 'tampilan 3D (gambar)',
+  cari: '{offsetX:S,offsetY:C}=zt(t,n,b,x,o,s,c);la(e,r,S,C,o,d,f)',
+  ganti: '{offsetX:S,offsetY:C}=zt(t,n,b,x,o,s,c);' +
+    'if(__kantor3DGambar({ctx:e,w:t,h:n,tileMap:r,furnitur:i,karakter:a,zoom:o,ox:S,oy:C,pilih:l,editor:u,tileColors:d,cols:f,pets:y}))' +
+    'return{offsetX:S,offsetY:C};la(e,r,S,C,o,d,f)',
+}
+const TIGA_D_LABEL = {
+  nama: 'tampilan 3D (label nama)',
+  cari: 'f=p.toScreenX(a.x),g=p.toScreenY(a.y+d-32);',
+  ganti: 'f=p.toScreenX(a.x),g=p.toScreenY(a.y+d-32);{let __p=__kantor3DLayar(a.x,a.y,32-d);__p&&(f=__p.x,g=__p.y)}',
+}
+const TIGA_D_MOUSE = {
+  nama: 'tampilan 3D (mouse)',
+  cari: 'return{worldX:(s-y.current.x)/f,worldY:(c-y.current.y)/f,',
+  ganti: 'let __w=__kantor3DDunia(s,c);return{worldX:__w?__w.x:(s-y.current.x)/f,worldY:__w?__w.y:(c-y.current.y)/f,',
+}
+
+// Dashboard bergaya game (lihat dasbor.js): bilah tombol + jendela STAFF. Kode biasa, cukup ditempel.
+const DASBOR_FUNGSI = {
+  nama: 'dashboard staff (fungsi)',
+  cari: 'var oo=class{layout;',
+  ganti: fs.readFileSync(path.join(HERE, 'dasbor.js'), 'utf8') + '\nvar oo=class{layout;',
+}
+// Server: API dashboard + siaran interkom (lihat server-kantor.js). `e` = server Fastify, `t` = konfigurasi
+// (token, store) di fungsi `oi`.
+const API_FUNGSI = {
+  nama: 'API dashboard & siaran interkom (fungsi)',
+  cari: 'async function oi(t){',
+  ganti: fs.readFileSync(path.join(HERE, 'server-kantor.js'), 'utf8') + '\nasync function oi(t){',
+}
+const API_SERVER = {
+  nama: 'API dashboard & siaran interkom',
+  cari: 'Dl(e),Fl(e,t),jl(e,t),await e.listen(',
+  ganti: 'Dl(e),Fl(e,t),jl(e,t),__kantorApi(e,t),await e.listen(',
+}
+
 // Tema antarmuka hangat: arang kecokelatan + aksen matcha menggantikan ungu neon bawaan.
 // Ditempel di akhir CSS, jadi menimpa variabel warna bawaan di :root.
 const TEMA_CSS = '\n/* --kantor-tema: arang hangat + aksen matcha (Kantor Ricko) */\n:root{' + [
@@ -330,8 +382,8 @@ function bundelTampilan(ekstensi = 'js') {
 }
 
 const TARGET = [
-  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER, STATUS_SERVER, STATUS_ALAT, STATUS_ALAT_HOOK] },
-  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, STATUS_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR, STATUS_FUNGSI, LABEL_SANTAI, LABEL_IZIN, LABEL_JAWABAN] },
+  { file: path.join(DIST, 'cli.js'), penanda: '__kantorKarakter', patches: [KARAKTER_TETAP, PULIHKAN_KARYAWAN, RAPAT_SERVER, STATUS_SERVER, STATUS_ALAT, STATUS_ALAT_HOOK, API_FUNGSI, API_SERVER] },
+  { file: bundelTampilan(), penanda: '__kantorRapat', patches: [RAPAT_TERIMA, STATUS_TERIMA, RAPAT_TAMPILAN, LABEL_JARAK, LABEL_NAMA, AMBIEN_FUNGSI, AMBIEN_DIAM, AMBIEN_AKTIF, AMBIEN_PALET, AKTIVITAS_GERAK, AKTIVITAS_GAMBAR, SATPAM, CAHAYA_FUNGSI, CAHAYA_GAMBAR, STATUS_FUNGSI, TIGA_D_FUNGSI, TIGA_D_GAMBAR, TIGA_D_LABEL, TIGA_D_MOUSE, DASBOR_FUNGSI] },
   { file: bundelTampilan('css'), penanda: '--kantor-tema', patches: [], tambahan: TEMA_CSS },
 ]
 
@@ -358,5 +410,11 @@ for (const { file, penanda, patches, tambahan } of TARGET) {
   if (tambahan) js += tambahan
   fs.writeFileSync(file, js)
   terpasang.push(...patches.map(p => p.nama), ...(tambahan ? ['tema warna hangat'] : []))
+}
+// Three.js (dipakai tiga-d.js lewat import('./three.module.js')) disalin ke samping bundel tampilan.
+for (const f of ['three.module.js', 'three.core.js']) {
+  const sumber = path.join(HERE, 'node_modules', 'three', 'build', f)
+  if (!fs.existsSync(sumber)) { console.error(`${f} tidak ada. Jalankan npm install di pixel-office dulu.`); process.exit(1) }
+  fs.copyFileSync(sumber, path.join(DIST, 'webview', 'assets', f))
 }
 console.log(`pixel-agents ${versi}: ${terpasang.length} patch terpasang (${terpasang.join('; ')}).`)

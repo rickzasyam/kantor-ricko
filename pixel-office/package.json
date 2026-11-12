@@ -5,6 +5,7 @@
   "type": "module",
   "dependencies": {
     "pixel-agents": "1.4.1",
-    "pngjs": "7.0.0"
+    "pngjs": "7.0.0",
+    "three": "0.187.0"
   }
 }

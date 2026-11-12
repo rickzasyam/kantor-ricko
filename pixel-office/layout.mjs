@@ -2,11 +2,11 @@
 // Gaya kantor Jepang yang hangat: lantai oak & tatami, dinding plester berbalok kayu, taman onsen.
 //
 //   ┌──────────┬─────────┬──────────────┬───────────┐
-//   │  Ruang   │ Ruang   │ Ruang Rapat  │  Matcha   │   baris 2-10
+//   │  Ruang   │ Ruang   │ Ruang Rapat  │  Matcha   │             baris 2-10
 //   │  Ricko   │ Manajer │              │   Bar     │
-//   ├──────────┴─────────┼──────┬───────┴───────────┤   dinding baris 11
-//   │    Ruang Kerja     │Lounge│    Ruang Game     │   baris 12-21
-//   ├─────────┬──────────┴──────┴───────────────────┤   dinding baris 22
+//   ├──────────┴─────────┼──────┬───────┴───────────┼────────┐    dinding baris 11
+//   │    Ruang Kerja     │Lounge│    Ruang Game     │  Mess  │    baris 12-21
+//   ├─────────┬──────────┴──────┴───────────────────┼────────┘    dinding baris 22
 //   │  Dojo   │          Taman Onsen                │   baris 23-33
 //   └─────────┴─────────────────────────────────────┘
 //
@@ -19,9 +19,9 @@ import { TIPE_LANTAI as T } from './lantai.mjs'
 
 /** Naikkan kalau desain denah berubah besar: pasang-pixel-office.ps1 lalu memasang denah ini
  *  sekali (denah lama di-backup), walaupun Pak Ricko pernah mengedit denah lewat editor Layout. */
-export const VERSI_DENAH = 3
+export const VERSI_DENAH = 4
 
-const COLS = 50
+const COLS = 61
 const ROWS = 36
 const VOID = 255
 const WALL = 0
@@ -63,7 +63,13 @@ const RUANG = [
   { label: 'Ruang Game', c: [30, 47], r: [12, 21], lantai: T.KAYU_LEBAR, warna: W.walnut, dinding: DINDING.plesterGelap, area: '#8d9ab3' },
   { label: 'Dojo', c: [2, 12], r: [23, 33], lantai: T.TATAMI, warna: W.tatamiDojo, dinding: DINDING.plesterGelap, area: '#c08766' },
   { label: 'Onsen', c: [14, 47], r: [23, 33], lantai: T.LUMUT, warna: W.lumut, dinding: DINDING.plester, area: '#7fb8ab' },
+  // Mess: kamar istirahat di sayap timur, tempat karyawan tidur saat kuota Claude habis
+  { label: 'Mess', c: [49, 58], r: [12, 21], lantai: T.KAYU_LEBAR, warna: W.oak, dinding: DINDING.plester, area: '#b7a3c9' },
 ]
+
+// Sayap timur hanya berisi Mess: bagian atas dan bawahnya dikosongkan (bukan blok dinding pejal).
+// [kolom, baris, lebar, tinggi]
+const KOSONG = [[49, 1, 11, 10], [49, 23, 11, 12]]
 
 // Petak lantai bermotif di dalam ruangan: [kolom, baris, lebar, tinggi, jenis, warna].
 // Diproses berurutan; petak belakangan menimpa yang lebih dulu.
@@ -75,6 +81,7 @@ const MOTIF = [
   [2, 23, 11, 3, T.KAYU_LEBAR, W.oak],                     // dojo: lajur kayu untuk alat latihan
   [2, 26, 1, 8, T.KAYU_LEBAR, W.oak], [12, 26, 1, 8, T.KAYU_LEBAR, W.oak],
   [23, 12, 1, 10, T.KAYU_LEBAR, W.oak],                    // lounge: bingkai kayu di sisi kiri
+  ...tatami(50, 13, 8, 8, W.tatami),                       // mess: tatami berbingkai lantai kayu
   [24, 3, 10, 7, T.KERIKIL, W.tepiPermadani],              // ruang rapat: permadani rami bertepi gelap
   [25, 4, 8, 5, T.KERIKIL, W.permadani],
   [2, 7, 5, 3, T.KERIKIL, W.tepiPermadani],                // ruang Ricko: permadani rami di pojok baca
@@ -123,6 +130,7 @@ const PINTU = [
   { tiles: [[25, 22], [26, 22]], ke: 'Onsen' },
   { tiles: [[38, 22], [39, 22]], ke: 'Onsen' },
   { tiles: [[13, 27], [13, 28]], ke: 'Onsen' },
+  { tiles: [[48, 14], [48, 15]], ke: 'Mess' },
 ]
 
 /** Kursi rapat: urutan warna bantal di sisi atas & bawah meja. */
@@ -207,6 +215,13 @@ const FURNITUR = [
   ['SEMAK_BUNGA', 36, 32], ['SEMAK', 44, 32], ['SEMAK_BESAR', 31, 32], ['SEMAK', 21, 32],
   ['BATU_BESAR', 23, 31], ['BATU_KECIL', 28, 32], ['RUMPUN_BAMBU', 46, 29],
   ...Array.from({ length: 17 }, (_, i) => ['PAGAR_BAMBU', 14 + i * 2, 33]),
+
+  // Mess: enam futon di atas tatami. URUTAN PENTING: futon ke-n milik karyawan ke-n di
+  // tools/karyawan.json (Pak Asep, Kokom, Ujang, Joko, Neneng, Ayu).
+  ['FUTON_SAGE', 51, 13], ['FUTON_SAKURA', 54, 13], ['FUTON_MATCHA', 57, 13],
+  ['FUTON_INDIGO', 51, 18], ['FUTON_LIAT', 54, 18], ['FUTON_EMAS', 57, 18],
+  ['JENDELA_SHOJI', 50, 10], ['PLAKAT_MESS', 53, 10], ['MARUMADO', 56, 10], ['KOKEDAMA', 58, 10],
+  ['AKARI', 49, 12], ['BONSAI', 58, 12], ['AKARI', 58, 20], ['BAMBU_POT', 49, 19], ['MEJA_BULAT', 54, 16],
 ]
 
 // Hewan peliharaan bawaan pixel-agents, berkeliaran di kantor.
@@ -248,7 +263,7 @@ function cekJangkauan(layout, katalog) {
     const info = katalog.get(f.type.replace(/:left$/, ''))
     if (!info || info.dinding || info.permukaan) continue
     for (let r = f.row + info.bg; r < f.row + info.fh; r++) for (let c = f.col; c < f.col + info.fw; c++) terhalang.add(idx(c, r))
-    if (info.kursi) kursi.push(f)
+    if (info.kursi || /^FUTON/.test(f.type)) kursi.push(f)   // futon: karyawan harus bisa mendatanginya untuk tidur
   }
   const bisaDiinjak = i => tiles[i] !== WALL && tiles[i] !== VOID && !terhalang.has(i)
   const mulai = areaTiles.findIndex((a, i) => a === 'Ruang Kerja' && bisaDiinjak(i))
@@ -293,6 +308,9 @@ export function buildLayout(furnitureDirs) {
   const idx = (c, r) => r * COLS + c
 
   for (let r = 1; r <= ROWS - 2; r++) for (let c = 1; c <= COLS - 2; c++) { tiles[idx(c, r)] = WALL; tileColors[idx(c, r)] = DINDING.plester }
+  for (const [c0, r0, w, h] of KOSONG) {
+    for (let r = r0; r < r0 + h; r++) for (let c = c0; c < c0 + w; c++) { tiles[idx(c, r)] = VOID; tileColors[idx(c, r)] = null }
+  }
   const ruang = Object.fromEntries(RUANG.map(x => [x.label, x]))
   for (const x of RUANG) {
     for (let r = x.r[0]; r <= x.r[1]; r++) for (let c = x.c[0]; c <= x.c[1]; c++) {

@@ -1,6 +1,6 @@
 [
   { "id": "pak-asep", "nama": "Pak Asep", "role": "PM & Admin",                  "jabatan": "Manager",              "channel": ["lobby", "laporan-harian", "keuangan", "proyek-*"] },
-  { "id": "kokom",    "nama": "Kokom",    "role": "Akuntan Senior",              "jabatan": "Akuntan",              "channel": ["lobby", "keuangan", "proyek-*"] },
+  { "id": "kokom",    "nama": "Kokom",    "role": "Akuntan Senior",              "jabatan": "Accountant",             "channel": ["lobby", "keuangan", "proyek-*"] },
   { "id": "ujang",    "nama": "Ujang",    "role": "Spreadsheet & Automation",    "jabatan": "Spreadsheet Engineer", "channel": ["lobby", "proyek-*"] },
   { "id": "joko",     "nama": "Joko",     "role": "Full-stack Developer",        "jabatan": "Developer",            "channel": ["lobby", "proyek-*"] },
   { "id": "neneng",   "nama": "Neneng",   "role": "Data Analyst & QA",           "jabatan": "Data Analyst & QA",    "channel": ["lobby", "keuangan", "proyek-*"] },

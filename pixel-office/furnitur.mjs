@@ -10,8 +10,9 @@ import * as dekor from './furnitur/dekor.mjs'
 import * as matcha from './furnitur/matcha.mjs'
 import * as main from './furnitur/main.mjs'
 import * as taman from './furnitur/taman.mjs'
+import * as mess from './furnitur/mess.mjs'
 
-const MODUL = [kerja, dekor, matcha, main, taman]
+const MODUL = [kerja, dekor, matcha, main, taman, mess]
 
 /** id, nama, kategori, sprite, footprint (tile), baris latar, opsi penempatan */
 const SINGLE = MODUL.flatMap(m => m.SINGLE ?? [])
