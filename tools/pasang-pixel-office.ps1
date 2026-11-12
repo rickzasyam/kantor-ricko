@@ -27,8 +27,9 @@ New-Item -ItemType Directory -Force -Path $pa | Out-Null
 # --- 1. Paket + patch + aset ------------------------------------------------------
 Push-Location $po
 try {
-  if (-not (Test-Path 'node_modules\pixel-agents\dist\cli.js')) {
-    Write-Host 'Memasang paket pixel-agents...'
+  # three = mesin tampilan 2.5D; dicek juga supaya PC yang sudah punya pixel-agents ikut memasangnya.
+  if (-not (Test-Path 'node_modules\pixel-agents\dist\cli.js') -or -not (Test-Path 'node_modules\three\build\three.module.js')) {
+    Write-Host 'Memasang paket pixel-agents + three...'
     npm install --no-audit --no-fund | Out-Null
   }
   node patch-pixel-agents.mjs

@@ -38,6 +38,17 @@
     "additionalDirectories": ["G:\\My Drive\\Kantor Ricko", "C:\\Users\\Ricko Erlangga\\Documents\\Coding"]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"C:/Users/Ricko Erlangga/Documents/Coding/Kantor-Ricko/tools/jobdesk.mjs\" neneng",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "SendMessage",
