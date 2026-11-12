@@ -2,7 +2,7 @@
 // ke channel Discord #ruang-rapat lewat webhook, supaya Pak Ricko bisa membaca
 // isi diskusi tim. Script biasa (bukan AI), jadi tidak memakai kuota Claude.
 //
-// Sekalian mencatat ringkasan pesan ke ~/.pixel-agents/kantor-interkom.jsonl untuk Pixel Office:
+// Sekalian mencatat ringkasan pesan ke ~/.kantor-ricko/kantor-interkom.jsonl untuk Kantor 3D:
 // karakter pengirim berjalan ke penerima dan gelembung obrolan kecil muncul di atas kepalanya.
 //
 // Pemakaian (dipasang di kantor-settings.json tiap karyawan):
@@ -54,9 +54,6 @@ function namaDariAlamat(to) {
   return cache[kode]
 }
 
-// pixel-agents menamai karakter dengan bagian terakhir nama folder sesi (pak-asep -> asep).
-const namaPixel = id => String(id).split('-').pop().toLowerCase()
-
 /** Ringkasan satu baris untuk gelembung obrolan: kalimat pertama, tanpa markdown, maks. 90 huruf. */
 function ringkas(pesan) {
   const bersih = pesan.replace(/```[\s\S]*?```/g, ' ').replace(/[*_`#>|]/g, '').replace(/\s+/g, ' ').trim()
@@ -64,14 +61,14 @@ function ringkas(pesan) {
   return kalimat.length > 90 ? kalimat.slice(0, 89).trimEnd() + '…' : kalimat
 }
 
-/** Catat pesan untuk animasi Pixel Office (server membacanya tiap detik). */
-function catatUntukPixel(sender, bareTo, message) {
+/** Catat pesan untuk animasi Kantor 3D (server membacanya tiap detik). */
+function catatUntukKantor(sender, bareTo, message) {
   try {
     const dari = Object.keys(NAMA).find(id => NAMA[id] === sender)
     if (!dari || !NAMA[bareTo]) return   // hanya obrolan antar-karyawan kantor
-    const dir = process.env.KANTOR_PIXEL_DIR ?? join(homedir(), '.pixel-agents')   // env: untuk pengujian
+    const dir = process.env.KANTOR_DIR ?? join(homedir(), '.kantor-ricko')   // env: untuk pengujian
     mkdirSync(dir, { recursive: true })
-    const baris = { id: `${Date.now()}-${process.pid}`, dari: namaPixel(dari), ke: namaPixel(bareTo), teks: ringkas(message), waktu: Date.now() }
+    const baris = { id: `${Date.now()}-${process.pid}`, dari, ke: bareTo, teks: ringkas(message), waktu: Date.now() }
     appendFileSync(join(dir, 'kantor-interkom.jsonl'), JSON.stringify(baris) + '\n')
   } catch {}
 }
@@ -99,7 +96,7 @@ async function main() {
       ?? 'rekan'
   }
   const target = NAMA[bareTo] ?? bareTo
-  if (response?.success !== false) catatUntukPixel(sender, bareTo, message)
+  if (response?.success !== false) catatUntukKantor(sender, bareTo, message)
 
   const webhookFile = process.env.INTERKOM_WEBHOOK_FILE // untuk pengujian
     ?? join(homedir(), '.claude', 'channels', 'kantor-ricko', 'ruang-rapat-webhook.txt')

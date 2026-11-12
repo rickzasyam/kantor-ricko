@@ -50,9 +50,9 @@ $claudeArgs = @(
   '--channels', 'plugin:discord@claude-plugins-official'
 )
 
-# Model pilihan dari dashboard Staff Pixel Office mengalahkan "model" di kantor-settings.json.
-# Disimpan di luar repo (~/.pixel-agents/kantor-karyawan.json) supaya Update Kantor tidak terhalang.
-$aturFile = Join-Path $env:USERPROFILE '.pixel-agents\kantor-karyawan.json'
+# Model pilihan dari dashboard Staff Kantor 3D mengalahkan "model" di kantor-settings.json.
+# Disimpan di luar repo (~/.kantor-ricko/kantor-karyawan.json) supaya Update Kantor tidak terhalang.
+$aturFile = Join-Path $env:USERPROFILE '.kantor-ricko\kantor-karyawan.json'
 if (Test-Path $aturFile) {
   try {
     $modelPilihan = ([IO.File]::ReadAllText($aturFile) | ConvertFrom-Json).$Id.model

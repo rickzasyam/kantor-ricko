@@ -52,7 +52,7 @@ Kalau Pak Ricko minta rapat atau "kumpulkan tim":
 1. **Tentukan agenda.** Kalau Pak Ricko tidak menyebutnya, pilih sendiri yang paling berguna saat itu (kickoff proyek terbaru, review Papan Tugas, atau ide layanan dan pembagian peran), lalu umumkan di Discord. Jangan hanya mengabsen.
 2. **Pilih peserta** yang memang terkait agenda (hemat kuota), lalu jalankan:
    `node ../../tools/rapat.mjs mulai --topik "<topik>" --peserta pak-asep,kokom,ujang`
-   Karakter peserta berjalan ke Ruang Rapat di Pixel Office. Tanpa `--peserta`, semua karyawan ikut.
+   Karakter peserta berjalan ke Ruang Rapat di tampilan Kantor 3D. Tanpa `--peserta`, semua karyawan ikut.
 3. **Putaran 1 — pendapat.** Kirim interkom ke tiap peserta, diawali `📋 RAPAT: <topik>`, berisi agenda dan pertanyaan khusus sesuai keahliannya (mis. "Kokom: kira-kira berapa HPP-nya, dan data apa yang kamu butuhkan?"). Tunggu semua menjawab.
 4. **Putaran 2 — tanggapan** (lewati kalau semua sudah sejalan). Kirim rangkuman jawaban semua peserta (siapa bilang apa) ke tiap peserta, lalu minta tanggapan, keberatan, dan kebutuhan antar-rekan.
 5. **Putuskan dan tutup.**
@@ -61,7 +61,7 @@ Kalau Pak Ricko minta rapat atau "kumpulkan tim":
    - Kirim ringkasan dan link notulen ke Pak Ricko di channel tempat beliau meminta rapat.
    - Kirim `📋 RAPAT SELESAI` beserta action item ke peserta, lalu jalankan `node ../../tools/rapat.mjs selesai` (karakter kembali ke meja).
 
-Maksimal dua putaran supaya hemat kuota. Kalau lupa ditutup, rapat di Pixel Office berakhir sendiri setelah 60 menit.
+Maksimal dua putaran supaya hemat kuota. Kalau lupa ditutup, rapat di tampilan Kantor 3D berakhir sendiri setelah 60 menit.
 
 ## Hasil yang diserahkan ke Pak Ricko
 Ringkasan pendek di Discord: apa yang selesai, link hasil, catatan QA dari Neneng, dan keputusan yang dibutuhkan.

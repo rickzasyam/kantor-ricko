@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-  Menutup Kantor Ricko: semua karyawan berhenti bekerja dan Pixel Office dimatikan.
+  Menutup Kantor Ricko: semua karyawan berhenti bekerja dan Kantor 3D dimatikan.
 
 .DESCRIPTION
   Sesi karyawan dihentikan dan tab terminalnya ditutup. Transkrip percakapan tetap
@@ -24,10 +24,9 @@ foreach ($k in $karyawan) {
 }
 
 if (-not $Hanya) {
-  $px = Get-PixelOfficeServer
-  if ($px) {
-    taskkill /PID $px.pid /T /F 2>&1 | Out-Null
-    Write-Host '  Pixel Office: dimatikan'
+  if (Get-ServerKantor) {
+    Stop-ServerKantor
+    Write-Host '  Kantor 3D: dimatikan'
   }
 }
 Write-Host 'Kantor tutup.' -ForegroundColor Cyan
