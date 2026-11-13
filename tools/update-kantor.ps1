@@ -5,7 +5,7 @@
 
 .DESCRIPTION
   1. git pull (hanya kalau tidak ada perubahan lokal yang belum di-commit).
-  2. Ada perubahan di pixel-office/ atau tools/karyawan.json -> pasang ulang Pixel Office.
+  2. Ada perubahan di kantor-3d/ atau tools/karyawan.json -> pasang ulang Kantor 3D.
   3. Ada perubahan aturan / pengaturan karyawan -> karyawan yang sedang menganggur dibuka
      ulang (percakapan dan ingatan tetap). Yang sedang bekerja dibiarkan; aturan baru berlaku
      setelah ia dibuka ulang (jalankan script ini lagi nanti).
@@ -19,10 +19,10 @@ $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'kantor-umum.ps1')
 Set-Location $KantorRoot
 
-# File hasil `node bangun.mjs` / `npm install` di pixel-office\ dibuat ulang setiap Pixel Office
+# File hasil `npm install` di kantor-3d\ bisa ditulis ulang setiap Kantor 3D
 # dipasang, dan isinya bisa sedikit berbeda antar-komputer (versi Node/npm). Itu bukan suntingan
 # Pak Ricko: kembalikan ke versi repo supaya git pull tidak terhalang.
-$hasilBangun = @('pixel-office/aset', 'pixel-office/layout-kantor.json', 'pixel-office/karakter.json', 'pixel-office/package-lock.json')
+$hasilBangun = @('kantor-3d/package-lock.json')
 foreach ($f in $hasilBangun) {
   if (git ls-files -- $f) { git checkout -- $f 2>$null }
 }
@@ -48,7 +48,7 @@ $berubah = @(git diff --name-only $lama $baru)
 
 # --- Karyawan: buka ulang yang menganggur supaya membaca aturan / pengaturan baru ---
 $aturanKaryawan = $berubah | Where-Object { $_ -match '^karyawan/|^tools/(jalankan-karyawan|kantor-umum|interkom-log)|^tools/atasan\.json$|^mulai-kantor\.ps1$' }
-$perluPixel = $berubah | Where-Object { $_ -match '^pixel-office/|^tools/karyawan\.json$|^tools/pasang-pixel-office\.ps1$' }
+$perluPixel = $berubah | Where-Object { $_ -match '^kantor-3d/|^tools/karyawan\.json$|^tools/pasang-kantor-3d\.ps1$|^tools/lepas-pixel-agents\.mjs$' }
 if ($aturanKaryawan) {
   Write-Host ''
   Write-Host 'Aturan / pengaturan karyawan berubah. Membuka ulang karyawan yang menganggur...' -ForegroundColor Cyan
@@ -64,16 +64,11 @@ if ($aturanKaryawan) {
   }
 }
 
-# --- Pixel Office ------------------------------------------------------------------
+# --- Kantor 3D ------------------------------------------------------------------
 if ($perluPixel) {
   Write-Host ''
-  Write-Host 'Tampilan Pixel Office berubah. Memasang ulang...' -ForegroundColor Cyan
-  if ($berubah -match '^pixel-office/package') {
-    # Versi pixel-agents berubah: pasang ulang dari nol supaya patch memakai salinan asli versi baru.
-    $pa = Join-Path $KantorRoot 'pixel-office\node_modules\pixel-agents'
-    if (Test-Path $pa) { [IO.Directory]::Delete($pa, $true) }
-  }
-  & (Join-Path $PSScriptRoot 'pasang-pixel-office.ps1') -MulaiUlang   # ikut membuka karyawan yang ditutup di atas
+  Write-Host 'Tampilan Kantor 3D berubah. Memasang ulang...' -ForegroundColor Cyan
+  & (Join-Path $PSScriptRoot 'pasang-kantor-3d.ps1') -MulaiUlang   # ikut membuka karyawan yang ditutup di atas
 } elseif ($aturanKaryawan) {
   & (Join-Path $KantorRoot 'mulai-kantor.ps1') -TanpaBrowser
 }

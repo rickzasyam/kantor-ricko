@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
   Membuka ulang satu karyawan supaya model / jobdesk barunya berlaku. Dipanggil tombol
-  "Save & restart" di dashboard Staff Pixel Office (lewat server Pixel Office).
+  "Save & restart" di dashboard Staff Kantor 3D (lewat server Kantor 3D).
 
 .DESCRIPTION
   Karyawan yang sedang bekerja TIDAK diganggu: script mencetak SIBUK dan berhenti, pengaturan

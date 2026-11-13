@@ -1,7 +1,7 @@
 <#
 .SYNOPSIS
   Membuka Kantor Ricko: semua karyawan bekerja di Windows Terminal yang disembunyikan
-  (tidak tampil di layar maupun taskbar) dan Pixel Office dibuka di browser.
+  (tidak tampil di layar maupun taskbar) dan Kantor 3D dibuka di browser.
 
 .DESCRIPTION
   - Karyawan yang sudah bekerja dan tersambung ke Discord dibiarkan.
@@ -19,7 +19,7 @@
   .\mulai-kantor.ps1 -Hanya pak-asep,kokom # sebagian saja
   .\mulai-kantor.ps1 -Baru                 # mulai percakapan baru (ingatan jangka panjang tetap)
   .\mulai-kantor.ps1 -Tampil               # jangan sembunyikan jendela terminal
-  .\mulai-kantor.ps1 -TanpaBrowser         # jangan buka Pixel Office di browser
+  .\mulai-kantor.ps1 -TanpaBrowser         # jangan buka Kantor 3D di browser
 #>
 param(
   [string[]]$Hanya,
@@ -110,25 +110,25 @@ if ($perluDibuka.Count) {
   }
 }
 
-# --- Pixel Office (tanpa jendela) ---------------------------------------------------
+# --- Tampilan Kantor 3D (server kecil tanpa jendela) --------------------------------
 if (-not $TanpaPixel) {
-  $url = Get-PixelOfficeUrl
+  $url = Get-UrlKantor
   if (-not $url) {
-    $log = Join-Path $env:USERPROFILE '.pixel-agents\kantor-pixel.log'
-    Set-AgenPixelKaryawan
-    # pixel-agents lokal (versi dikunci + patch karakter tetap). Belum dipasang? pakai npx.
-    $cli = Join-Path $KantorRoot 'pixel-office\node_modules\pixel-agents\dist\cli.js'
-    $env:KANTOR_KARAKTER = Join-Path $KantorRoot 'pixel-office\karakter.json'
-    $cmd = if (Test-Path $cli) { "node `"$cli`"" } else { 'npx --yes pixel-agents' }
-    Start-Process -FilePath 'cmd.exe' -WindowStyle Hidden -WorkingDirectory (Join-Path $KantorRoot 'karyawan') `
-      -ArgumentList "/c $cmd --port $PixelPort > `"$log`" 2>&1"
-    for ($i = 0; $i -lt 30 -and -not $url; $i++) { Start-Sleep -Seconds 2; $url = Get-PixelOfficeUrl }
+    $k3d = Join-Path $KantorRoot 'kantor-3d'
+    if (-not (Test-Path (Join-Path $k3d 'node_modules\three\build\three.module.js'))) {
+      & (Join-Path $KantorRoot 'tools\pasang-kantor-3d.ps1')
+    }
+    New-Item -ItemType Directory -Force -Path $DirKantor | Out-Null
+    $log = Join-Path $DirKantor 'server.log'
+    Start-Process -FilePath 'cmd.exe' -WindowStyle Hidden -WorkingDirectory $k3d `
+      -ArgumentList "/c node server.mjs --port $PortKantor > `"$log`" 2>&1"
+    for ($i = 0; $i -lt 20 -and -not $url; $i++) { Start-Sleep -Seconds 1; $url = Get-UrlKantor }
   }
   if ($url) {
-    Write-Host "Pixel Office: $url"
+    Write-Host "Kantor 3D: $url"
     if (-not $TanpaBrowser) { Start-Process $url }
   } else {
-    Write-Warning "Pixel Office belum menyala. Lihat log: $env:USERPROFILE\.pixel-agents\kantor-pixel.log"
+    Write-Warning "Kantor 3D belum menyala. Lihat log: $DirKantor\server.log"
   }
 }
 

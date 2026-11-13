@@ -1,4 +1,4 @@
-// Mode rapat di Pixel Office: karakter peserta berjalan ke Ruang Rapat dan duduk di sana
+// Mode rapat di Kantor 3D: karakter peserta berjalan ke Ruang Rapat dan duduk di sana
 // sampai rapat ditutup, lalu kembali ke mejanya.
 //
 //   node tools/rapat.mjs mulai --topik "Kickoff Kedai Kopi" [--peserta pak-asep,kokom,ujang] [--menit 60]
@@ -6,19 +6,19 @@
 //   node tools/rapat.mjs status
 //
 // Tanpa --peserta semua karyawan ikut. Rapat otomatis dianggap selesai setelah --menit
-// (bawaan 60) kalau lupa ditutup. Pixel Office membaca file ~/.pixel-agents/kantor-rapat.json
-// (lihat patch "mode rapat" di pixel-office/patch-pixel-agents.mjs).
+// (bawaan 60) kalau lupa ditutup. Kantor 3D membaca file ~/.kantor-ricko/kantor-rapat.json
+// (lihat kantor-3d/server.mjs dan kantor-3d/web/simulasi.js).
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
-const FILE = path.join(os.homedir(), '.pixel-agents', 'kantor-rapat.json')
+const FILE = path.join(process.env.KANTOR_DIR ?? path.join(os.homedir(), '.kantor-ricko'), 'kantor-rapat.json')   // env: untuk pengujian
 const karyawan = JSON.parse(fs.readFileSync(path.join(HERE, 'karyawan.json'), 'utf8'))
 
-// pixel-agents menamai karakter dengan bagian terakhir nama folder sesi (pak-asep -> asep).
-const namaPixel = id => id.split('-').pop().toLowerCase()
+// Nama pendek tanpa awalan (pak-asep -> asep) juga diterima di --peserta.
+const namaPendek = id => id.split('-').pop().toLowerCase()
 
 function opsi(nama) {
   const i = process.argv.indexOf(`--${nama}`)
@@ -34,7 +34,7 @@ if (perintah === 'mulai') {
   const daftar = (opsi('peserta') ?? karyawan.map(k => k.id).join(',')).split(',').map(s => s.trim().toLowerCase()).filter(Boolean)
   const peserta = []
   for (const p of daftar) {
-    const k = karyawan.find(k => k.id === p || namaPixel(k.id) === p || k.nama.toLowerCase() === p)
+    const k = karyawan.find(k => k.id === p || namaPendek(k.id) === p || k.nama.toLowerCase() === p)
     if (!k) { console.error(`Peserta tidak dikenal: ${p}. Pilihan: ${karyawan.map(k => k.id).join(', ')}`); process.exit(1) }
     peserta.push(k)
   }
@@ -44,8 +44,8 @@ if (perintah === 'mulai') {
     aktif: true,
     topik,
     ruang: 'Ruang Rapat',
-    pemimpin: 'asep',
-    peserta: peserta.map(k => namaPixel(k.id)),
+    pemimpin: 'pak-asep',
+    peserta: peserta.map(k => k.id),
     mulai: new Date().toISOString(),
     sampai: new Date(Date.now() + menit * 60_000).toISOString(),
   }

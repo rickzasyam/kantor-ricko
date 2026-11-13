@@ -1,0 +1,13 @@
+{
+  "name": "kantor-ricko-3d",
+  "private": true,
+  "description": "Kantor Ricko 3D: tampilan kantor virtual (Three.js) + server kecil tanpa dependensi lain",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test uji/kantor.test.mjs"
+  },
+  "dependencies": {
+    "three": "0.187.0"
+  }
+}

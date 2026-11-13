@@ -2,7 +2,7 @@
 //
 // Claude Code memberi status line data pemakaian langganan Pro: persentase limit 5 jam dan
 // mingguan beserta jam reset-nya (`rate_limits`). Data ini disimpan ke
-// ~/.pixel-agents/kantor-kuota.json supaya Pixel Office bisa menampilkan indikator kuota.
+// ~/.kantor-ricko/kantor-kuota.json supaya Kantor 3D bisa menampilkan indikator kuota.
 // Semua karyawan memakai akun yang sama, jadi cukup satu file: data terbaru yang menang.
 //
 // Berjalan hanya saat tampilan terminal karyawan diperbarui (setelah ada jawaban), bukan terus.
@@ -23,7 +23,7 @@ const limaJam = jendela(rl?.five_hour)
 const mingguan = jendela(rl?.seven_day)
 
 if (limaJam || mingguan) {
-  const dir = join(homedir(), '.pixel-agents')
+  const dir = process.env.KANTOR_DIR ?? join(homedir(), '.kantor-ricko')   // env: untuk pengujian
   try {
     mkdirSync(dir, { recursive: true })
     const file = join(dir, 'kantor-kuota.json')

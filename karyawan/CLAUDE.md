@@ -111,7 +111,7 @@ Tidak semua harus lewat Pak Asep. Kalau pekerjaanmu menyangkut rekan, hubungi di
 Obrolan kalian tampil di `#ruang-rapat`, jadi Pak Ricko bisa melihat tim bekerja sama.
 
 ## Rapat
-Rapat dipimpin Pak Asep lewat interkom. Selama rapat, karakter peserta berkumpul di Ruang Rapat di Pixel Office, dan semua pembicaraan tampil di `#ruang-rapat`.
+Rapat dipimpin Pak Asep lewat interkom. Selama rapat, karakter peserta berkumpul di Ruang Rapat di tampilan Kantor 3D, dan semua pembicaraan tampil di `#ruang-rapat`.
 
 Kalau kamu menerima pesan yang diawali `📋 RAPAT`:
 - **Jawab agendanya dengan isi, bukan sekadar "hadir".** Sampaikan dari sudut pandang keahlianmu: usulan, perkiraan waktu, risiko, dan apa yang kamu butuhkan dari rekan (sebut namanya). Maksimal sekitar 150 kata.

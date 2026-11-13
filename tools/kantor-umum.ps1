@@ -3,7 +3,9 @@
 $KantorRoot = Split-Path -Parent $PSScriptRoot
 $DriveKantor = 'G:\My Drive\Kantor Ricko'
 $DiscordChannel = 'plugin:discord@claude-plugins-official'
-$PixelPort = 3737
+$PortKantor = 3737
+# Data Kantor 3D di luar repo: kuota, rapat, interkom, pilihan Staff, token & server.json.
+$DirKantor = Join-Path $env:USERPROFILE '.kantor-ricko'
 $JudulTab = 'Kantor - '   # awalan judul tab Windows Terminal; dipakai untuk menemukan jendela kantor
 
 # Akses Win32 untuk menyembunyikan / menampilkan jendela Windows Terminal kantor.
@@ -189,51 +191,31 @@ function Test-PunyaDiscord([int]$SessionPid) {
   return $false
 }
 
-# Server Pixel Office yang sedang hidup, dibaca dari registrasi pixel-agents.
-function Get-PixelOfficeServer {
-  $dir = Join-Path $env:USERPROFILE '.pixel-agents\servers'
-  foreach ($f in (Get-ChildItem $dir -Filter '*.json' -ErrorAction SilentlyContinue)) {
-    try { $s = Get-Content $f.FullName -Raw | ConvertFrom-Json } catch { continue }
-    if ($s.pid -and (Get-Process -Id $s.pid -ErrorAction SilentlyContinue)) { return $s }
-  }
+# Server Kantor 3D yang sedang hidup (kantor-3d\server.mjs menulis server.json saat menyala).
+function Get-ServerKantor {
+  $f = Join-Path $DirKantor 'server.json'
+  if (-not (Test-Path $f)) { return $null }
+  try { $s = [IO.File]::ReadAllText($f) | ConvertFrom-Json } catch { return $null }
+  if ($s.pid -and (Get-Process -Id $s.pid -ErrorAction SilentlyContinue)) { return $s }
   return $null
 }
 
-# Daftarkan sesi terbaru tiap karyawan di state Pixel Office (panggil saat server MATI).
-# Server hanya melihat sesi yang sedang aktif; karyawan yang menganggur baru muncul setelah
-# bekerja. Dengan ini mereka langsung tampil di mejanya saat Pixel Office dibuka.
-function Set-AgenPixelKaryawan {
-  $stateFile = Join-Path $env:USERPROFILE '.pixel-agents\standalone-state.json'
-  $state = if (Test-Path $stateFile) { Get-Content $stateFile -Raw | ConvertFrom-Json } else { $null }
-  $agents = @(if ($state -and $state.agents) { $state.agents | ForEach-Object { $_ } })
-  $projects = Join-Path $env:USERPROFILE '.claude\projects'
-  $berubah = $false
-  foreach ($k in (Get-Karyawan)) {
-    $key = (Join-Path $KantorRoot "karyawan\$($k.id)") -replace '[^A-Za-z0-9]', '-'
-    $dir = Join-Path $projects $key
-    $latest = Get-ChildItem $dir -Filter '*.jsonl' -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-    if (-not $latest) { continue }
-    # Buang sesi lama karyawan ini, sisakan / tambahkan sesi terbarunya.
-    $lama = @($agents | Where-Object { $_.projectDir -eq $dir -and $_.jsonlFile -ne $latest.FullName })
-    if ($lama.Count) { $agents = @($agents | Where-Object { $lama -notcontains $_ }); $berubah = $true }
-    if (-not ($agents | Where-Object { $_.jsonlFile -eq $latest.FullName })) {
-      $nextId = (@($agents | ForEach-Object { [int]$_.id }) + 0 | Measure-Object -Maximum).Maximum + 1
-      $agents += [pscustomobject]@{
-        id = $nextId; sessionId = $latest.BaseName; terminalName = ''; isExternal = $true
-        jsonlFile = $latest.FullName; projectDir = $dir; folderName = ($key -split '-')[-1]
-      }
-      $berubah = $true
-    }
-  }
-  if (-not $berubah) { return }
-  # Kursi lama dibuang; kursi baru dipilih ulang sesuai ruangan (areaMappings).
-  $baru = [pscustomobject]@{ agents = $agents; seats = [pscustomobject]@{} }
-  New-Item -ItemType Directory -Force -Path (Split-Path $stateFile) | Out-Null
-  [IO.File]::WriteAllText($stateFile, ($baru | ConvertTo-Json -Depth 10), (New-Object System.Text.UTF8Encoding $false))
+function Get-UrlKantor {
+  $s = Get-ServerKantor
+  if ($s) { return $s.url }
+  return $null
 }
 
-function Get-PixelOfficeUrl {
-  $s = Get-PixelOfficeServer
-  if ($s) { return "http://127.0.0.1:$($s.port)/?token=$($s.token)" }
-  return $null
+# Matikan server tampilan kantor: Kantor 3D, dan server Pixel Agents lama kalau masih hidup
+# (perlu sekali saat pindah dari Pixel Office ke Kantor 3D; setelah itu tidak menemukan apa-apa).
+function Stop-ServerKantor {
+  $s = Get-ServerKantor
+  if ($s) { taskkill /PID $s.pid /T /F 2>&1 | Out-Null }
+  $lama = Join-Path $env:USERPROFILE '.pixel-agents\servers'
+  foreach ($f in (Get-ChildItem $lama -Filter '*.json' -ErrorAction SilentlyContinue)) {
+    try { $p = [int](Get-Content $f.FullName -Raw | ConvertFrom-Json).pid } catch { continue }
+    if (-not $p) { continue }
+    $proc = Get-CimInstance Win32_Process -Filter "ProcessId = $p" -ErrorAction SilentlyContinue
+    if ($proc -and $proc.Name -eq 'node.exe' -and $proc.CommandLine -match 'pixel-agents') { taskkill /PID $p /T /F 2>&1 | Out-Null }
+  }
 }

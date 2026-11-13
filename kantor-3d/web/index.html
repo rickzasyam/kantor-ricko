@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kantor Ricko</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23b9573f'/%3E%3Ctext x='16' y='23' font-size='19' text-anchor='middle' fill='%23fbf6ec' font-family='Georgia,serif'%3EK%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./web/gaya.css">
+</head>
+<body>
+  <canvas id="kanvas" aria-label="Kantor Ricko 3D office"></canvas>
+  <div id="lapis" aria-hidden="true"></div>
+
+  <header id="merek" class="kartu">
+    <span class="cap">K</span>
+    <div><h1>Kantor Ricko</h1><p id="jam"></p></div>
+  </header>
+
+  <div id="rapat" class="kartu" hidden></div>
+  <aside id="kuota" class="kartu" hidden></aside>
+  <nav id="dok" aria-label="Staff"></nav>
+
+  <div id="alat" class="kartu">
+    <button data-aksi="kiri" title="Rotate left (Q)">&#x27F2;</button>
+    <button data-aksi="kanan" title="Rotate right (E)">&#x27F3;</button>
+    <button data-aksi="jauh" title="Zoom out">&minus;</button>
+    <button data-aksi="dekat" title="Zoom in">+</button>
+    <button data-aksi="setel" title="Reset view (double-click the office)">Reset</button>
+    <button data-aksi="staff" class="utama" title="Staff: AI model and job desk">Staff</button>
+  </div>
+
+  <div id="putus" class="kartu" hidden>Reconnecting to the office&hellip;</div>
+  <div id="staff" hidden></div>
+
+  <script type="module" src="./web/utama.js"></script>
+</body>
+</html>
