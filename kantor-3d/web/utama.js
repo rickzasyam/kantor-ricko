@@ -7,9 +7,11 @@
 //   __kantor.maju(10)           majukan simulasi 10 detik (untuk tab yang animasinya dijeda)
 import { buatDunia } from './dunia.js'
 import { Simulasi } from './simulasi.js'
-import { buatTokoh, gerakkan } from './tokoh.js'
+import { buatTokoh, gerakkan, muatModel } from './tokoh.js'
 import { buatAntarmuka, kuotaHabis } from './antarmuka.js'
 import { KURSI } from './denah.js'
+
+await muatModel()
 
 const token = new URLSearchParams(location.search).get('token') || ''
 const dunia = buatDunia(document.getElementById('kanvas'))

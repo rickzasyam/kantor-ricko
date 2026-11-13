@@ -210,7 +210,7 @@ function bukaUlang(id) {
   })
 }
 
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png' }
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.glb': 'model/gltf-binary' }
 
 function sajikan(res, dasar, nama, lama) {
   const file = path.resolve(dasar, nama)
@@ -255,6 +255,7 @@ export async function mulaiServer({ port = 3737 } = {}) {
       if (jalur === '/' || jalur === '/index.html') return sajikan(res, WEB, 'index.html')
       if (jalur.startsWith('/web/')) return sajikan(res, WEB, jalur.slice(5))
       if (jalur === '/vendor/three.module.js' || jalur === '/vendor/three.core.js') return sajikan(res, VENDOR, jalur.slice(8), true)
+      if (jalur.startsWith('/vendor/jsm/')) return sajikan(res, path.join(VENDOR, '..', 'examples', 'jsm'), jalur.slice(12), true)   // GLTFLoader dkk.
       if (!jalur.startsWith('/api/')) { res.writeHead(404).end('Not found'); return }
       if (!tokenSah(req, url)) return json(res, 401, { error: 'Not authorized. Open the office from its own link.' })
 
