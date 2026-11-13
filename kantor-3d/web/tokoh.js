@@ -1,11 +1,25 @@
-// Karakter 3D karyawan Kantor Ricko: sosok mungil berkepala besar yang dirakit dari bentuk dasar
-// (tanpa berkas aset), dengan ciri tiap orang: warna baju dan gaya rambut. Pose (jalan, duduk,
-// mengetik, tidur, berendam, ...) dibuat dengan memutar lengan/kaki dan menggeser badan.
+// Karakter 3D karyawan Kantor Ricko: sosok mungil berkepala besar. Model karyawan dibuat di Blender
+// mengikuti foto profil mereka (kantor-3d/model/karyawan.py -> web/tokoh.glb); yang tidak ada di
+// file itu (Pak Ricko) atau kalau file gagal dimuat, dirakit dari bentuk dasar di bawah.
+// Pose (jalan, duduk, mengetik, tidur, berendam, ...) dibuat dengan memutar lengan/kaki dan menggeser badan.
 //
 // Supaya ringan saat banyak karakter bergerak, tiap sosok hanya 7 jaring (kepala, torso, 2 lengan,
 // 2 kaki, cangkir) dengan satu bahan bersama; bagian kecilnya (mata, rambut, dasi) digabung.
 import * as T from '../vendor/three.module.js'
+import { GLTFLoader } from '../vendor/jsm/loaders/GLTFLoader.js'
 import { Rakit } from './model.js'
+
+// Bagian model dari Blender per karyawan: { joko: { kepala: Mesh, tubuh: Mesh, ... } }
+let MODEL = {}
+export async function muatModel() {
+  try {
+    const glb = await new GLTFLoader().loadAsync('./web/tokoh.glb')
+    glb.scene.traverse(o => {
+      const i = o.name.lastIndexOf('_')
+      if (o.isMesh && i > 0) (MODEL[o.name.slice(0, i)] ??= {})[o.name.slice(i + 1)] = o
+    })
+  } catch (e) { console.warn('tokoh.glb gagal dimuat, memakai model bawaan:', e) }
+}
 
 const KULIT = '#f2cba6'
 export const PENAMPILAN = {
@@ -35,6 +49,18 @@ export function buatTokoh(id) {
   const p = PENAMPILAN[id] ?? PENAMPILAN.ujang
   const akar = new T.Group(), badan = new T.Group(), tubuh = new T.Group()
   akar.add(badan); badan.add(tubuh)
+
+  const m = MODEL[id]
+  if (m) {
+    // posisi tiap bagian = sendinya, sudah ditentukan di Blender
+    const pasang = (induk, n) => { const b = new T.Mesh(m[n].geometry, BAHAN); b.position.copy(m[n].position); b.castShadow = true; induk.add(b); return b }
+    pasang(tubuh, 'tubuh')
+    const lenganKa = pasang(tubuh, 'lenganKa')
+    const cangkir = bagian(lenganKa, k => k.silinder(0.06, 0.1, '#f6efe2', 0, 0, 0).silinder(0.045, 0.01, '#9cb05c', 0, 0.1, 0), 0, -0.45, 0.09)
+    cangkir.visible = false
+    return { id, akar, badan, tubuh, kepala: pasang(badan, 'kepala'), lenganKi: pasang(tubuh, 'lenganKi'), lenganKa,
+      kakiKi: pasang(tubuh, 'kakiKi'), kakiKa: pasang(tubuh, 'kakiKa'), cangkir, fase: Math.random() * 6, kini: {} }
+  }
 
   bagian(tubuh, k => {
     k.silinder(p.rok ? 0.33 : 0.25, 0.46, p.baju, 0, 0.44, 0, { rAtas: 0.2, sisi: 12 })

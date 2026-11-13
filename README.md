@@ -52,6 +52,9 @@ kantor-3d/                  tampilan kantor di browser, mandiri (satu-satunya pa
     denah.js                ruangan, pintu, furnitur, kursi, futon, tempat santai, peta jalan + pencari jalan
     model.js                model 3D furnitur dari bentuk dasar (tanpa berkas aset), digabung jadi 2 jaring
     tokoh.js                karakter 3D tiap karyawan + pose (jalan, mengetik, tidur, berendam, ...)
+    tokoh.glb               model karyawan dari Blender (hasil model/karyawan.py)
+  model/
+    karyawan.py             skrip Blender: model 6 karyawan mirip foto profil, ekspor ke web/tokoh.glb
     dunia.js                adegan: lantai, dinding, kolam onsen, cahaya pagi/siang/sore/malam, kamera
     simulasi.js             perilaku: kerja, interkom, rapat, tidur saat kuota habis, santai
     antarmuka.js            label & gelembung, kartu kuota, deretan staf, panel Staff
@@ -189,6 +192,7 @@ Semua teks antarmuka berbahasa Inggris; isi obrolan karyawan apa adanya. Data ta
 
 - Pasang / perbarui tampilan: `.\tools\pasang-kantor-3d.ps1 -MulaiUlang`
 - Ubah denah atau furnitur: `kantor-3d/web/denah.js` (letak) dan `model.js` (bentuk), lalu `npm test` di `kantor-3d` (memastikan semua kursi, futon, dan tempat santai masih bisa didatangi).
+- Ubah tampang karyawan: edit `kantor-3d/model/karyawan.py`, lalu jalankan `"C:\Program Files\Blender Foundation\Blender 5.3\blender.exe" --background --python kantor-3d\model\karyawan.py` (menulis ulang `web/tokoh.glb`). Di Blender yang terbuka: tab Scripting > Open > Run Script untuk melihat modelnya di adegan "Karyawan". Bagian tubuh harus tetap 6 objek `<id>_<bagian>` dengan titik asal di sendinya, supaya pose jalan/duduk/tidur tetap jalan.
 - Mencoba tanpa menyentuh kantor asli: lihat kepala `kantor-3d/uji/kantor-tiruan.mjs`.
 - Hanya karyawan di `tools/karyawan.json` dan Pak Ricko (sesi di folder repo ini) yang tampil.
 
